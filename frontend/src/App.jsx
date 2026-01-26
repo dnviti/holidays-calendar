@@ -4,6 +4,12 @@ import { useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import { Loader2 } from 'lucide-react';
 
+// Configure React Router future flags
+const future = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true
+};
+
 // Handlers for lazy loading could go here, but keeping it simple for now
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -49,7 +55,7 @@ const AuthCallback = () => {
 
 function App() {
   return (
-    <Routes>
+    <Routes future={future}>
       <Route path="/login" element={<Login />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
 
@@ -57,7 +63,7 @@ function App() {
         <ProtectedRoute>
           <Layout />
         </ProtectedRoute>
-      }>
+      } future={future}>
         <Route index element={<Dashboard />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="admin/branding" element={<AdminBranding />} />

@@ -2,13 +2,23 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import CalendarView from '../components/CalendarView';
 import { useAuth } from '../contexts/AuthContext';
-import Select from '../components/ui/Select';
-import Button from '../components/ui/Button';
-import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Box,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Fab,
+  Grid
+} from '@mui/material';
+import { Add } from '@mui/icons-material';
+import { getCalendarEvents } from '../services/eventService';
 
 const CalendarPage = () => {
-  const [events, setEvents] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBU, setSelectedBU] = useState('');
   const [businessUnits, setBusinessUnits] = useState([]);
@@ -21,7 +31,7 @@ const CalendarPage = () => {
 
   useEffect(() => {
     if (selectedBU) {
-      fetchEvents(selectedBU);
+      fetchCalendarData(selectedBU);
     }
   }, [selectedBU]);
 
@@ -38,83 +48,91 @@ const CalendarPage = () => {
     }
   };
 
-  const fetchEvents = async (buId) => {
+  const fetchCalendarData = async (buId) => {
     setLoadingEvents(true);
     try {
       // Fetch full year for broad coverage
       const start = new Date().getFullYear() + '-01-01';
       const end = new Date().getFullYear() + '-12-31';
 
-      const response = await api.get(`/holidays/calendar?business_unit_id=${buId}&start_date=${start}&end_date=${end}`);
-      setEvents(response.data);
+      // Fetch holidays
+      const holidaysResponse = await api.get(`/holidays/calendar?business_unit_id=${buId}&start_date=${start}&end_date=${end}`);
+      const holidays = holidaysResponse.data;
+
+      // Fetch events
+      const eventsResponse = await getCalendarEvents(start, end, buId);
+      const events = eventsResponse;
+
+      // Combine holidays and events
+      const combinedEvents = [...holidays, ...events];
+
+      setCalendarEvents(combinedEvents);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to load events');
+      toast.error('Failed to load calendar data');
     } finally {
       setLoading(false);
       setLoadingEvents(false);
     }
   };
 
-  const handleCreateEvent = () => {
-    // Basic navigation or modal trigger would go here
-    // For now, we'll just show a toast as per original placeholder
-    console.log('Create event clicked');
-    toast.info('Create event functionality coming soon');
+  const handleCreateEvent = (newEvent) => {
+    // Add the new event to the calendar
+    setCalendarEvents(prev => [...prev, newEvent]);
+    toast.success('Event created successfully!');
   };
 
-  const buOptions = businessUnits.map(bu => ({
-    value: bu.id,
-    label: bu.name
-  }));
-
   return (
-    <div className="h-full flex flex-col gap-4">
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 2, p: 1 }}>
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Team Calendar</h1>
-          <p className="text-secondary text-sm">View holidays and events for your team</p>
-        </div>
+      <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Grid item>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Team Calendar
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            View holidays and events for your team
+          </Typography>
+        </Grid>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="w-full md:w-64">
+        <Grid item xs={12} md="auto">
+          <FormControl fullWidth variant="outlined" sx={{ minWidth: 250 }}>
+            <InputLabel>Select Business Unit</InputLabel>
             <Select
               value={selectedBU}
               onChange={(e) => setSelectedBU(e.target.value)}
-              options={buOptions}
+              label="Select Business Unit"
               disabled={loading}
-              placeholder="Select Business Unit"
-            />
-          </div>
-        </div>
-      </div>
+            >
+              {businessUnits.map((bu) => (
+                <MenuItem key={bu.id} value={bu.id}>
+                  {bu.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
 
       {/* Calendar Area */}
-      <div className="flex-1 relative min-h-0 bg-surface rounded-lg">
-        {loading && !events.length ? (
-          <div className="h-full flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
+      <Box sx={{ flex: 1, position: 'relative', minHeight: 0, bgcolor: 'background.paper', borderRadius: 2, p: 2 }}>
+        {loading && !calendarEvents.length ? (
+          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
         ) : (
           <CalendarView
-            events={events}
+            events={calendarEvents}
             businessUnitName={businessUnits.find(b => b.id === selectedBU)?.name}
+            onCreateEvent={handleCreateEvent}
+            businessUnits={businessUnits}
+            showEventCreation={true}
           />
         )}
-      </div>
+      </Box>
 
-      {/* Floating Action Button Replacement - Fixed position button */}
-      <div className="fixed bottom-8 right-8 z-50">
-        <Button
-          onClick={handleCreateEvent}
-          className="rounded-full w-14 h-14 shadow-lg flex items-center justify-center p-0"
-          title="Add Holiday"
-        >
-          <Plus size={24} />
-        </Button>
-      </div>
-    </div>
+      {/* Floating Action Button - This is now handled by the CalendarView component */}
+    </Box>
   );
 };
 

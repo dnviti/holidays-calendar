@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Card, CardContent } from '../components/ui/Card';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
+import {
+  Box,
+  Typography,
+  Card as MuiCard,
+  CardContent as MuiCardContent,
+  Grid,
+  Avatar,
+  Chip,
+  Stack
+} from '@mui/material';
 
 const Team = () => {
   const { user } = useAuth();
@@ -51,43 +60,65 @@ const Team = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">My Team</h1>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        My Team
+      </Typography>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Grid container spacing={3}>
         {teamMembers.map(member => (
-          <Card key={member.id}>
-            <CardContent className="flex items-center gap-4 py-6">
-              {member.avatar_url ? (
-                <img src={member.avatar_url} alt="" className="w-12 h-12 rounded-full" />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-surface flex items-center justify-center font-bold text-lg border border-border" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--surface-color)' }}>
-                  {member.display_name?.charAt(0)}
-                </div>
-              )}
-              <div>
-                <h3 className="font-bold">{member.display_name}</h3>
-                <p className="text-sm text-secondary">{member.email}</p>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {member.business_unit_names?.map(bu => (
-                    <span key={bu} className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary" style={{ backgroundColor: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary-color)' }}>
-                      {bu}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Grid item xs={12} sm={6} md={4} key={member.id}>
+            <MuiCard>
+              <MuiCardContent>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Avatar src={member.avatar_url} sx={{ width: 48, height: 48, bgcolor: 'primary.main' }}>
+                    {member.display_name?.charAt(0)}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6" component="h3">
+                      {member.display_name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {member.email}
+                    </Typography>
+                    <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                      {member.business_unit_names?.map((bu, idx) => (
+                        <Chip
+                          key={idx}
+                          label={bu}
+                          size="small"
+                          sx={{
+                            backgroundColor: 'primary.light',
+                            color: 'primary.contrastText'
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+                </Stack>
+              </MuiCardContent>
+            </MuiCard>
+          </Grid>
         ))}
-      </div>
+      </Grid>
 
       {teamMembers.length === 0 && (
-        <p className="text-secondary text-center py-10">You don't have any team members yet.</p>
+        <Box sx={{ textAlign: 'center', py: 10 }}>
+          <Typography variant="body1" color="text.secondary">
+            You don't have any team members yet.
+          </Typography>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

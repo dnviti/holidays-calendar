@@ -6,12 +6,23 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import CalendarHeader from './CalendarHeader';
 import EventDialog from './EventDialog';
+import EventCreationDialog from './EventCreationDialog';
 
-const CalendarView = ({ events, onDateSelect, onEventDrop, businessUnitName }) => {
+const CalendarView = ({
+  events,
+  onDateSelect,
+  onEventDrop,
+  businessUnitName,
+  onCreateEvent,
+  businessUnits = [],
+  showEventCreation = false
+}) => {
   const calendarRef = useRef(null);
   const [view, setView] = useState('dayGridMonth');
   const [title, setTitle] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   // Update title on mount/change
   useEffect(() => {
@@ -50,6 +61,29 @@ const CalendarView = ({ events, onDateSelect, onEventDrop, businessUnitName }) =
     setSelectedEvent(clickInfo.event);
   };
 
+  const handleDateSelect = (selectInfo) => {
+    // Convert the selected date to a string in YYYY-MM-DD format
+    const startDate = selectInfo.start.toISOString().split('T')[0];
+    setSelectedDate(startDate);
+
+    // Show the event creation dialog if creation is enabled
+    if (showEventCreation) {
+      setShowCreateDialog(true);
+    }
+
+    // Call the parent handler if provided
+    if (onDateSelect) {
+      onDateSelect(selectInfo);
+    }
+  };
+
+  const handleCreateEventSuccess = (newEvent) => {
+    if (onCreateEvent) {
+      onCreateEvent(newEvent);
+    }
+    setShowCreateDialog(false);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <CalendarHeader
@@ -75,7 +109,7 @@ const CalendarView = ({ events, onDateSelect, onEventDrop, businessUnitName }) =
             dayMaxEvents={true}
             weekends={true}
             events={events}
-            select={onDateSelect}
+            select={handleDateSelect}
             eventClick={handleEventClick}
             eventDrop={onEventDrop}
             height="100%"
@@ -96,6 +130,16 @@ const CalendarView = ({ events, onDateSelect, onEventDrop, businessUnitName }) =
         event={selectedEvent}
         onClose={() => setSelectedEvent(null)}
       />
+
+      {showEventCreation && (
+        <EventCreationDialog
+          open={showCreateDialog}
+          onClose={() => setShowCreateDialog(false)}
+          onSuccess={handleCreateEventSuccess}
+          selectedDate={selectedDate}
+          businessUnits={businessUnits}
+        />
+      )}
     </div>
   );
 };

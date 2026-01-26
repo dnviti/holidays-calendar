@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship
 if TYPE_CHECKING:
     from .business_unit import BusinessUnit
     from .holiday import Holiday
+    from .event import Event
 
 
 class UserRole(str, Enum):
@@ -54,6 +55,9 @@ class User(UserBase, table=True):
     )
     holidays: List["Holiday"] = Relationship(
         sa_relationship=relationship("Holiday", back_populates="user", foreign_keys="[Holiday.user_id]")
+    )
+    events: List["Event"] = Relationship(
+        sa_relationship=relationship("Event", back_populates="user", foreign_keys="[Event.user_id]")
     )
     managed_units: List["BusinessUnit"] = Relationship(
         sa_relationship=relationship("BusinessUnit", back_populates="manager")

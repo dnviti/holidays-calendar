@@ -11,6 +11,7 @@ from sqlalchemy.orm import relationship
 if TYPE_CHECKING:
     from .user import User, UserBusinessUnit
     from .holiday import Holiday
+    from .event import Event
 
 
 class BusinessUnitBase(SQLModel):
@@ -49,6 +50,9 @@ class BusinessUnit(BusinessUnitBase, table=True):
     )
     holidays: List["Holiday"] = Relationship(
         sa_relationship=relationship("Holiday", back_populates="business_unit")
+    )
+    events: List["Event"] = Relationship(
+        sa_relationship=relationship("Event", back_populates="business_unit")
     )
 
 

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from app.core.config import settings
 from app.core.database import create_db_and_tables
-from app.api import auth, users, business_units, holidays, branding
+from app.api import auth, users, business_units, holidays, events, branding
 
 
 @asynccontextmanager
@@ -94,6 +94,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(business_units.router, prefix="/api")
 app.include_router(holidays.router, prefix="/api")
+app.include_router(events.router, prefix="/api")
 app.include_router(branding.router, prefix="/api")
 
 

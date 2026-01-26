@@ -2,11 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import CalendarView from '../components/CalendarView';
-import Button from '../components/ui/Button';
-import Modal from '../components/ui/Modal';
-import Input from '../components/ui/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { toast } from 'sonner';
+import {
+  Box,
+  Typography,
+  Grid,
+  Card as MuiCard,
+  CardContent as MuiCardContent,
+  Button as MuiButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
+} from '@mui/material';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -42,7 +51,7 @@ const Dashboard = () => {
       // Get the user's first business unit if not selected (simplification for now)
       let buId = requestData.business_unit_id;
       if (!buId && user.business_unit_memberships?.length > 0) {
-        // We need to fetch BUs or rely on preloaded data. 
+        // We need to fetch BUs or rely on preloaded data.
         // For now, let's assume we need to select one.
         // In a real app we'd have a select in the form.
       }
@@ -61,6 +70,13 @@ const Dashboard = () => {
 
       toast.success('Holiday request submitted!');
       setIsRequestModalOpen(false);
+      setRequestData({
+        start_date: '',
+        end_date: '',
+        title: '',
+        description: '',
+        business_unit_id: ''
+      });
       fetchHolidays();
     } catch (error) {
       console.error(error);
@@ -114,86 +130,153 @@ const Dashboard = () => {
   });
 
   return (
-    <div className="flex flex-col h-full gap-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Welcome back, {user?.display_name}</h1>
-          <p className="text-secondary">Here is your holiday overview</p>
-        </div>
-        <Button onClick={() => setIsRequestModalOpen(true)}>Request Leave</Button>
-      </div>
+    <Box sx={{ flex: 1, gap: 3, p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Welcome back, {user?.display_name}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Here is your holiday overview
+          </Typography>
+        </Box>
+        <MuiButton
+          variant="contained"
+          onClick={() => setIsRequestModalOpen(true)}
+          sx={{ borderRadius: 2, py: 1, px: 3 }}
+        >
+          Request Leave
+        </MuiButton>
+      </Box>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Grid container spacing={3} sx={{ mb: 3 }}>
         {/* Stats Cards */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-secondary">Pending Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {holidays.filter(h => h.status === 'pending').length}
-            </div>
-          </CardContent>
-        </Card>
+        <Grid item xs={12} sm={6} md={4}>
+          <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
+            <MuiCardContent>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Pending Requests
+              </Typography>
+              <Typography variant="h4" component="div" fontWeight="bold">
+                {holidays.filter(h => h.status === 'pending').length}
+              </Typography>
+            </MuiCardContent>
+          </MuiCard>
+        </Grid>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-secondary">Approved (This Year)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-success" style={{ color: 'var(--success-color)' }}>
-              {holidays.filter(h => h.status === 'approved').length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <Grid item xs={12} sm={6} md={4}>
+          <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
+            <MuiCardContent>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Approved (This Year)
+              </Typography>
+              <Typography
+                variant="h4"
+                component="div"
+                fontWeight="bold"
+                color="success.main"
+              >
+                {holidays.filter(h => h.status === 'approved').length}
+              </Typography>
+            </MuiCardContent>
+          </MuiCard>
+        </Grid>
 
-      <div className="flex-1 min-h-[500px]">
+        <Grid item xs={12} sm={6} md={4}>
+          <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
+            <MuiCardContent>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Total Holidays
+              </Typography>
+              <Typography variant="h4" component="div" fontWeight="bold">
+                {holidays.length}
+              </Typography>
+            </MuiCardContent>
+          </MuiCard>
+        </Grid>
+      </Grid>
+
+      <Box sx={{ flex: 1, minHeight: '500px' }}>
         <CalendarView events={events} onEventDrop={handleEventDrop} />
-      </div>
+      </Box>
 
-      <Modal
-        isOpen={isRequestModalOpen}
+      <Dialog
+        open={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
-        title="Request Leave"
+        maxWidth="sm"
+        fullWidth
       >
-        <form onSubmit={handleRequestSubmit} className="space-y-4">
-          <Input
-            label="Title"
-            value={requestData.title}
-            onChange={e => setRequestData({ ...requestData, title: e.target.value })}
-            required
-            placeholder="e.g. Summer Vacation"
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Start Date"
-              type="date"
-              value={requestData.start_date}
-              onChange={e => setRequestData({ ...requestData, start_date: e.target.value })}
+        <DialogTitle sx={{ pb: 1 }}>Request Leave</DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Box component="form" onSubmit={handleRequestSubmit} sx={{ mt: 1 }}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={requestData.title}
+              onChange={e => setRequestData({ ...requestData, title: e.target.value })}
               required
+              placeholder="e.g. Summer Vacation"
+              margin="normal"
+              variant="outlined"
+              sx={{ mb: 2 }}
             />
-            <Input
-              label="End Date"
-              type="date"
-              value={requestData.end_date}
-              onChange={e => setRequestData({ ...requestData, end_date: e.target.value })}
-              required
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Start Date"
+                  type="date"
+                  value={requestData.start_date}
+                  onChange={e => setRequestData({ ...requestData, start_date: e.target.value })}
+                  required
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="End Date"
+                  type="date"
+                  value={requestData.end_date}
+                  onChange={e => setRequestData({ ...requestData, end_date: e.target.value })}
+                  required
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                />
+              </Grid>
+            </Grid>
+            <TextField
+              fullWidth
+              label="Description"
+              value={requestData.description}
+              onChange={e => setRequestData({ ...requestData, description: e.target.value })}
+              placeholder="Optional"
+              multiline
+              rows={3}
+              margin="normal"
+              variant="outlined"
             />
-          </div>
-          <Input
-            label="Description"
-            value={requestData.description}
-            onChange={e => setRequestData({ ...requestData, description: e.target.value })}
-            placeholder="Optional"
-          />
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="secondary" onClick={() => setIsRequestModalOpen(false)}>Cancel</Button>
-            <Button type="submit">Submit Request</Button>
-          </div>
-        </form>
-      </Modal>
-    </div>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <MuiButton
+            onClick={() => setIsRequestModalOpen(false)}
+            variant="outlined"
+            sx={{ borderRadius: 2, px: 3 }}
+          >
+            Cancel
+          </MuiButton>
+          <MuiButton
+            onClick={handleRequestSubmit}
+            variant="contained"
+            sx={{ borderRadius: 2, px: 3 }}
+          >
+            Submit Request
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 
