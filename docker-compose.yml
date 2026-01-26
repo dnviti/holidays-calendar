@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # - ./backend:/app # Commented out to prevent shadowing compiled static files
+      - backend_uploads:/app/uploads
+      # Mount static files from host for dev? No, we rely on build.
+      # But if we want to test the build, we don't mount over it.
+      # If we mount ./backend:/app, it OVERWRITES the /app in container (including static/dist copied in Dockerfile).
+      # This is tricky for development.
+      # If we want to run "monolith" in dev with docker-compose, we should NOT mount ./backend over /app
+      # OR we should make sure static/dist exists in host.
+      # For now, I will keep the volume but be aware that local changes might mask the built static files unless I build locally too.
+      # Actually, better to comment out the code volume for "prod functionality verification" or handle it carefully.
+      # But standard dev flow usually wants volumes.
+      # Let's keep volumes but maybe use a named volume for static?
+      # No, simplest is: if user wants to see the BUILT frontend, they shouldn't mount local backend code over it unless local backend code HAS dist.
+      # I will remove the code volume mapping for now to ensure the Docker build artifact is used.
+      # The user asked for "monolith", usually implying deployment structure.
+    environment:
+      - DATABASE_URL=sqlite:///./holiday_calendar.db
+      - DEBUG=true
+       # FRONTEND_URL is now same origin
+      - FRONTEND_URL=http://localhost:8000
+      - CORS_ORIGINS=http://localhost:8000
+
+volumes:
+  backend_uploads:

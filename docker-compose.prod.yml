@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: 
+      context: ./frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  backend:
+    build: 
+      context: ./backend
+    restart: always
+    volumes:
+      - backend_uploads:/app/uploads
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/holidays
+      - ENVIRONMENT=production
+      - FRONTEND_URL=http://your-domain.com
+      - CORS_ORIGINS=http://your-domain.com
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=holidays
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  backend_uploads:
+  postgres_data:
