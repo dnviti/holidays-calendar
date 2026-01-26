@@ -1,111 +1,431 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
 import api from '../../services/api';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import Input from '../../components/ui/Input';
-import Button from '../../components/ui/Button';
-import { useTheme } from '../../contexts/ThemeContext';
 import { toast } from 'sonner';
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  Stack,
+  IconButton,
+  Tooltip,
+  Avatar
+} from '@mui/material';
+import { Add, Edit, Delete } from '@mui/icons-material';
 
 const AdminBranding = () => {
-  const { branding, updateBranding } = useTheme();
-  const { register, handleSubmit, reset } = useForm();
+  const [branding, setBranding] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editingBranding, setEditingBranding] = useState(true); // Always editing the single branding config
+  const [formData, setFormData] = useState({
+    app_name: '',
+    logo_url: '',
+    primary_color: '#3B82F6',
+    secondary_color: '#1E40AF',
+    accent_color: '#8B5CF6',
+    info_color: '#0EA5E9',
+    success_color: '#10B981',
+    warning_color: '#F59E0B',
+    danger_color: '#EF4444'
+  });
+  const [logoFile, setLogoFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (branding) {
-      reset(branding);
-    }
-  }, [branding, reset]);
+    fetchBranding();
+  }, []);
 
-  const onSubmit = async (data) => {
+  const fetchBranding = async () => {
     try {
-      const response = await api.put('/branding', data);
-      updateBranding(response.data);
-      toast.success('Branding updated successfully');
+      const response = await api.get('/branding');
+      setBranding(response.data);
+      setFormData(response.data);
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to update branding');
-    }
-  };
-
-  const handleLogoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('logo_type', 'main');
-
-    setUploading(true);
-    try {
-      const response = await api.post('/branding/logo', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      // Reload branding to see change
-      const brandingRes = await api.get('/branding');
-      updateBranding(brandingRes.data);
-      toast.success('Logo uploaded');
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to upload logo');
+      console.error('Error fetching branding:', error);
+      toast.error('Failed to fetch branding');
     } finally {
-      setUploading(false);
+      setLoading(false);
     }
   };
+
+  const handleOpenDialog = () => {
+    if (branding) {
+      setFormData({
+        app_name: branding.app_name || '',
+        logo_url: branding.logo_url || '',
+        primary_color: branding.primary_color || '#3B82F6',
+        secondary_color: branding.secondary_color || '#1E40AF',
+        accent_color: branding.accent_color || '#8B5CF6',
+        info_color: branding.info_color || '#0EA5E9',
+        success_color: branding.success_color || '#10B981',
+        warning_color: branding.warning_color || '#F59E0B',
+        danger_color: branding.danger_color || '#EF4444'
+      });
+    }
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setLogoFile(null);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setLogoFile(file);
+      // Preview the selected image
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData(prev => ({
+          ...prev,
+          logo_url: event.target.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      if (logoFile) {
+        // If logo file is selected, use the logo upload endpoint
+        const submitData = new FormData();
+
+        // Add all form fields to FormData
+        Object.keys(formData).forEach(key => {
+          if (key !== 'logo_url') { // Don't add the preview URL to the form data
+            submitData.append(key, formData[key]);
+          }
+        });
+
+        // Add logo file
+        submitData.append('file', logoFile);
+        submitData.append('logo_type', 'main');
+
+        const response = await api.post('/branding/logo', submitData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        setBranding(response.data);
+        toast.success('Branding updated successfully');
+      } else {
+        // If no logo change, use PUT request with JSON
+        const { logo_url, ...jsonFormData } = formData; // Exclude logo_url from JSON submission
+        const response = await api.put('/branding', jsonFormData);
+
+        setBranding(response.data);
+        toast.success('Branding updated successfully');
+      }
+
+      handleCloseDialog();
+    } catch (error) {
+      console.error('Error saving branding:', error);
+      toast.error(error.response?.data?.detail || 'Failed to save branding');
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <Typography>Loading branding settings...</Typography>
+      </Box>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Branding & Customization</h1>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 2, p: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" component="h1">
+          Branding Management
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<Edit />}
+          onClick={handleOpenDialog}
+        >
+          Edit Branding
+        </Button>
+      </Box>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>General Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Input label="Application Name" {...register('app_name')} />
-
-            <div>
-              <label className="label">Logo</label>
-              <div className="flex items-center gap-4">
+      <TableContainer component={Paper} sx={{ flex: 1, maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>Setting</TableCell>
+              <TableCell>Value</TableCell>
+              <TableCell>Preview</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell>Application Name</TableCell>
+              <TableCell>{branding?.app_name || 'Not set'}</TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Logo</TableCell>
+              <TableCell>{branding?.logo_url ? 'Logo uploaded' : 'No logo'}</TableCell>
+              <TableCell>
                 {branding?.logo_url && (
-                  <div className="p-2 border border-border rounded bg-surface">
-                    <img src={branding.logo_url} alt="Logo" className="h-10" />
-                  </div>
+                  <Avatar src={branding.logo_url} alt="Logo" sx={{ width: 40, height: 40 }} />
                 )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="text-sm"
-                  onChange={handleLogoUpload}
-                  disabled={uploading}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Primary Color</TableCell>
+              <TableCell>{branding?.primary_color || '#3B82F6'}</TableCell>
+              <TableCell>
+                <Box sx={{
+                  width: 30,
+                  height: 30,
+                  backgroundColor: branding?.primary_color || '#3B82F6',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }} />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Secondary Color</TableCell>
+              <TableCell>{branding?.secondary_color || '#1E40AF'}</TableCell>
+              <TableCell>
+                <Box sx={{
+                  width: 30,
+                  height: 30,
+                  backgroundColor: branding?.secondary_color || '#1E40AF',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }} />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Accent Color</TableCell>
+              <TableCell>{branding?.accent_color || '#8B5CF6'}</TableCell>
+              <TableCell>
+                <Box sx={{
+                  width: 30,
+                  height: 30,
+                  backgroundColor: branding?.accent_color || '#8B5CF6',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }} />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Info Color</TableCell>
+              <TableCell>{branding?.info_color || '#0EA5E9'}</TableCell>
+              <TableCell>
+                <Box sx={{
+                  width: 30,
+                  height: 30,
+                  backgroundColor: branding?.info_color || '#0EA5E9',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }} />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Success Color</TableCell>
+              <TableCell>{branding?.success_color || '#10B981'}</TableCell>
+              <TableCell>
+                <Box sx={{
+                  width: 30,
+                  height: 30,
+                  backgroundColor: branding?.success_color || '#10B981',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }} />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Warning Color</TableCell>
+              <TableCell>{branding?.warning_color || '#F59E0B'}</TableCell>
+              <TableCell>
+                <Box sx={{
+                  width: 30,
+                  height: 30,
+                  backgroundColor: branding?.warning_color || '#F59E0B',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }} />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Danger Color</TableCell>
+              <TableCell>{branding?.danger_color || '#EF4444'}</TableCell>
+              <TableCell>
+                <Box sx={{
+                  width: 30,
+                  height: 30,
+                  backgroundColor: branding?.danger_color || '#EF4444',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }} />
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Color Palette</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input type="color" label="Primary Color" {...register('primary_color')} className="h-12" />
-            <Input type="color" label="Secondary Color" {...register('secondary_color')} className="h-12" />
-            <Input type="color" label="Accent Color" {...register('accent_color')} className="h-12" />
-            <Input type="color" label="Info Color" {...register('info_color')} className="h-12" />
-            <Input type="color" label="Success Color" {...register('success_color')} className="h-12" />
-            <Input type="color" label="Warning Color" {...register('warning_color')} className="h-12" />
-            <Input type="color" label="Danger Color" {...register('danger_color')} className="h-12" />
-          </CardContent>
-        </Card>
+      {/* Branding Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        <DialogTitle>
+          Edit Branding Configuration
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Update branding configuration below.
+          </DialogContentText>
 
-        <div className="flex justify-end">
-          <Button type="submit" size="lg">Save Changes</Button>
-        </div>
-      </form>
-    </div>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <TextField
+              margin="dense"
+              name="app_name"
+              label="Application Name"
+              fullWidth
+              variant="outlined"
+              value={formData.app_name}
+              onChange={handleChange}
+            />
+
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Logo Upload
+              </Typography>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                disabled={uploading}
+              />
+              {formData.logo_url && !logoFile && (
+                <Box sx={{ mt: 1 }}>
+                  <Avatar src={formData.logo_url} alt="Current Logo" sx={{ width: 50, height: 50 }} />
+                </Box>
+              )}
+              {logoFile && (
+                <Box sx={{ mt: 1 }}>
+                  <Avatar src={URL.createObjectURL(logoFile)} alt="New Logo" sx={{ width: 50, height: 50 }} />
+                </Box>
+              )}
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, mt: 2 }}>
+              <TextField
+                margin="dense"
+                name="primary_color"
+                label="Primary Color"
+                type="color"
+                fullWidth
+                variant="outlined"
+                value={formData.primary_color}
+                onChange={handleChange}
+              />
+
+              <TextField
+                margin="dense"
+                name="secondary_color"
+                label="Secondary Color"
+                type="color"
+                fullWidth
+                variant="outlined"
+                value={formData.secondary_color}
+                onChange={handleChange}
+              />
+
+              <TextField
+                margin="dense"
+                name="accent_color"
+                label="Accent Color"
+                type="color"
+                fullWidth
+                variant="outlined"
+                value={formData.accent_color}
+                onChange={handleChange}
+              />
+
+              <TextField
+                margin="dense"
+                name="info_color"
+                label="Info Color"
+                type="color"
+                fullWidth
+                variant="outlined"
+                value={formData.info_color}
+                onChange={handleChange}
+              />
+
+              <TextField
+                margin="dense"
+                name="success_color"
+                label="Success Color"
+                type="color"
+                fullWidth
+                variant="outlined"
+                value={formData.success_color}
+                onChange={handleChange}
+              />
+
+              <TextField
+                margin="dense"
+                name="warning_color"
+                label="Warning Color"
+                type="color"
+                fullWidth
+                variant="outlined"
+                value={formData.warning_color}
+                onChange={handleChange}
+              />
+
+              <TextField
+                margin="dense"
+                name="danger_color"
+                label="Danger Color"
+                type="color"
+                fullWidth
+                variant="outlined"
+                value={formData.danger_color}
+                onChange={handleChange}
+              />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 
