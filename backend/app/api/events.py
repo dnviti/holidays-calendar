@@ -159,7 +159,7 @@ async def get_calendar_events(
         # Create datetime objects for calendar
         start_datetime = e.start_date
         end_datetime = e.end_date
-        
+
         # If times are provided, create datetime objects
         if e.start_time and e.end_time:
             from datetime import datetime, time
@@ -167,6 +167,11 @@ async def get_calendar_events(
             end_time = datetime.combine(e.end_date, datetime.strptime(e.end_time, "%H:%M").time())
             start_datetime = start_time
             end_datetime = end_time
+
+        # Determine color based on event type and business unit
+        color = e.color
+        if not color and bu:  # Use business unit color if no specific color is set
+            color = bu.primary_color
 
         calendar_events.append(EventCalendarEvent(
             id=e.id,
@@ -180,7 +185,7 @@ async def get_calendar_events(
             visibility=e.visibility,
             is_all_day=e.is_all_day,
             location=e.location,
-            color=e.color,
+            color=color,
         ))
 
     return calendar_events

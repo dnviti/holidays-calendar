@@ -179,16 +179,16 @@ async def get_calendar_events(
     events = []
     for h in holidays:
         user = user_service.get_user_by_id(h.user_id)
-        
-        # Determine color based on status
+
+        # Determine color based on status and business unit
         color = bu.primary_color if bu else "#3B82F6"
         if h.status == HolidayStatus.PENDING:
-            color = "#F59E0B"  # Amber
+            color = "#F59E0B"  # Amber for pending approvals
         elif h.status == HolidayStatus.REJECTED:
-            color = "#EF4444"  # Red
+            color = "#EF4444"  # Red for rejected
         elif h.status == HolidayStatus.CHANGE_REQUESTED:
-            color = "#F97316"  # Orange
-        
+            color = "#F97316"  # Orange for change requested
+
         events.append(HolidayCalendarEvent(
             id=h.id,
             title=f"{user.display_name if user else 'Unknown'}: {h.title}",

@@ -15,7 +15,7 @@ import {
   Grid
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import { getCalendarEvents } from '../services/eventService';
+import { getCalendarEvents, updateEvent, deleteEvent } from '../services/eventService';
 
 const CalendarPage = () => {
   const [calendarEvents, setCalendarEvents] = useState([]);
@@ -76,17 +76,77 @@ const CalendarPage = () => {
     }
   };
 
-  const handleCreateEvent = (newEvent) => {
-    // Add the new event to the calendar
-    setCalendarEvents(prev => [...prev, newEvent]);
-    toast.success('Event created successfully!');
+  const handleCreateEvent = async (newEvent) => {
+    try {
+      // Add the new event to the calendar
+      setCalendarEvents(prev => [...prev, newEvent]);
+      toast.success('Event created successfully!');
+    } catch (error) {
+      toast.error('Failed to create event');
+    }
+  };
+
+  const handleUpdateEvent = async (updatedEvent) => {
+    try {
+      // Update the event in the backend
+      const updatedEventFromAPI = await updateEvent(updatedEvent.id, updatedEvent);
+
+      setCalendarEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEventFromAPI : e));
+      toast.success('Event updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update event');
+    }
+  };
+
+  const handleEventDrop = async (dropInfo) => {
+    try {
+      // Prepare the update data
+      const updatedEventData = {
+        start_date: dropInfo.event.start.toISOString().split('T')[0],
+        end_date: dropInfo.event.end ? dropInfo.event.end.toISOString().split('T')[0] : dropInfo.event.start.toISOString().split('T')[0],
+      };
+
+      // If the event has time components, include them
+      if (dropInfo.event.start.getHours() || dropInfo.event.start.getMinutes()) {
+        updatedEventData.start_time = `${String(dropInfo.event.start.getHours()).padStart(2, '0')}:${String(dropInfo.event.start.getMinutes()).padStart(2, '0')}`;
+      }
+
+      if (dropInfo.event.end && (dropInfo.event.end.getHours() || dropInfo.event.end.getMinutes())) {
+        updatedEventData.end_time = `${String(dropInfo.event.end.getHours()).padStart(2, '0')}:${String(dropInfo.event.end.getMinutes()).padStart(2, '0')}`;
+      }
+
+      // Update the event in the backend
+      const updatedEvent = await updateEvent(dropInfo.event.id, updatedEventData);
+
+      // Update the event in the calendar
+      setCalendarEvents(prev =>
+        prev.map(e => e.id === dropInfo.event.id ? updatedEvent : e)
+      );
+
+      toast.success('Event moved successfully!');
+    } catch (error) {
+      toast.error('Failed to move event');
+    }
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      // Delete the event from the backend
+      await deleteEvent(eventId);
+
+      // Remove the event from the calendar
+      setCalendarEvents(prev => prev.filter(e => e.id !== eventId));
+      toast.success('Event deleted successfully!');
+    } catch (error) {
+      toast.error('Failed to delete event');
+    }
   };
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 2, p: 1 }}>
       {/* Header Section */}
       <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Grid item>
+        <Grid>
           <Typography variant="h4" component="h1" gutterBottom>
             Team Calendar
           </Typography>
@@ -95,7 +155,7 @@ const CalendarPage = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} md="auto">
+        <Grid xs={12} md="auto">
           <FormControl fullWidth variant="outlined" sx={{ minWidth: 250 }}>
             <InputLabel>Select Business Unit</InputLabel>
             <Select
@@ -125,6 +185,9 @@ const CalendarPage = () => {
             events={calendarEvents}
             businessUnitName={businessUnits.find(b => b.id === selectedBU)?.name}
             onCreateEvent={handleCreateEvent}
+            onUpdateEvent={handleUpdateEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onEventDrop={handleEventDrop}
             businessUnits={businessUnits}
             showEventCreation={true}
           />

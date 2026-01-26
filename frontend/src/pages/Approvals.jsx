@@ -73,11 +73,11 @@ const Approvals = () => {
       ) : (
         <Grid container spacing={2}>
           {pendingRequests.map(request => (
-            <Grid item xs={12} key={request.id}>
+            <Grid xs={12} key={request.id}>
               <MuiCard>
                 <MuiCardContent>
                   <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} md={8}>
+                    <Grid xs={12} md={8}>
                       <Stack direction="row" spacing={2} alignItems="center">
                         <Avatar src={request.user_avatar} sx={{ bgcolor: 'primary.main' }}>
                           {request.user_name?.charAt(0)}
@@ -111,7 +111,7 @@ const Approvals = () => {
                       </Stack>
                     </Grid>
 
-                    <Grid item xs={12} md={4}>
+                    <Grid xs={12} md={4}>
                       <Stack direction="row" spacing={1} justifyContent={{ xs: 'flex-start', md: 'flex-end' }} sx={{ mt: { xs: 2, md: 0 } }}>
                         <Button
                           variant="outlined"

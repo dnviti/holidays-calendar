@@ -16,14 +16,19 @@ const EventCreationDialog = ({ open, onClose, onSuccess, selectedDate, businessU
   const handleCreateEvent = async (eventData) => {
     setLoading(true);
     setError('');
-    
+
     try {
       // If a date was selected, use it as the start/end date
       if (selectedDate) {
         eventData.start_date = selectedDate;
         eventData.end_date = selectedDate;
       }
-      
+
+      // Default to "holiday" event type if not specified
+      if (!eventData.event_type) {
+        eventData.event_type = 'holiday';
+      }
+
       const newEvent = await createEvent(eventData);
       onSuccess(newEvent);
       onClose();

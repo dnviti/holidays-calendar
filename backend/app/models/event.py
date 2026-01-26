@@ -13,6 +13,7 @@ from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 
 class EventType(str, Enum):
     """Type of event."""
+    HOLIDAY = "holiday"
     MEETING = "meeting"
     DEADLINE = "deadline"
     CONFERENCE = "conference"

@@ -13,15 +13,16 @@ const EventForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [] 
     end_date: initialData?.end_date || format(new Date(), 'yyyy-MM-dd'),
     start_time: initialData?.start_time || '09:00',
     end_time: initialData?.end_time || '17:00',
-    event_type: initialData?.event_type || 'meeting',
+    event_type: initialData?.event_type || 'holiday',
     visibility: initialData?.visibility || 'private',
-    is_all_day: initialData?.is_all_day || false,
+    is_all_day: initialData?.is_all_day || true, // Holidays are typically all-day by default
     location: initialData?.location || '',
     color: initialData?.color || '#3B82F6',
     business_unit_id: initialData?.business_unit_id || ''
   });
 
   const eventTypeOptions = [
+    { value: 'holiday', label: 'Holiday' },
     { value: 'meeting', label: 'Meeting' },
     { value: 'deadline', label: 'Deadline' },
     { value: 'conference', label: 'Conference' },

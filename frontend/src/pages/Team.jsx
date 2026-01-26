@@ -76,7 +76,7 @@ const Team = () => {
 
       <Grid container spacing={3}>
         {teamMembers.map(member => (
-          <Grid item xs={12} sm={6} md={4} key={member.id}>
+          <Grid xs={12} sm={6} md={4} key={member.id}>
             <MuiCard>
               <MuiCardContent>
                 <Stack direction="row" spacing={2} alignItems="center">
