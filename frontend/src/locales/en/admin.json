@@ -1,0 +1,171 @@
+{
+  "users": {
+    "title": "User Management",
+    "subtitle": "Manage users and their roles",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "deleteUser": "Delete User",
+    "userDetails": "User Details",
+    "columns": {
+      "email": "Email",
+      "name": "Name",
+      "role": "Role",
+      "businessUnits": "Business Units",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "roles": {
+      "admin": "Admin",
+      "bu_manager": "BU Manager",
+      "employee": "Employee"
+    },
+    "form": {
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "role": "Role",
+      "businessUnits": "Business Units",
+      "selectBusinessUnits": "Select Business Units",
+      "selectRole": "Select Role",
+      "status": "Status"
+    },
+    "messages": {
+      "createSuccess": "User created successfully",
+      "createFailed": "Failed to create user",
+      "updateSuccess": "User updated successfully",
+      "updateFailed": "Failed to update user",
+      "deleteSuccess": "User deleted successfully",
+      "deleteFailed": "Failed to delete user",
+      "confirmDelete": "Are you sure you want to delete this user?",
+      "fetchFailed": "Failed to fetch users",
+      "fetchBusinessUnitsFailed": "Failed to fetch business units",
+      "fetchUserBusinessUnitsFailed": "Failed to fetch user business units",
+      "saveFailed": "Failed to save user",
+      "businessUnitAddSuccess": "Business unit added successfully",
+      "businessUnitAddFailed": "Failed to add business unit",
+      "businessUnitRequired": "User must belong to at least one business unit",
+      "businessUnitRemoveSuccess": "Business unit removed successfully",
+      "businessUnitRemoveFailed": "Failed to remove business unit"
+    }
+  },
+  "businessUnits": {
+    "title": "Business Units",
+    "subtitle": "Manage business units and their managers",
+    "addBusinessUnit": "Add Business Unit",
+    "editBusinessUnit": "Edit Business Unit",
+    "deleteBusinessUnit": "Delete Business Unit",
+    "columns": {
+      "name": "Name",
+      "description": "Description",
+      "manager": "Manager",
+      "members": "Members",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Business Unit Name",
+      "description": "Description",
+      "manager": "Manager",
+      "selectManager": "Select Manager",
+      "noManager": "No Manager"
+    },
+    "messages": {
+      "createSuccess": "Business unit created successfully",
+      "createFailed": "Failed to create business unit",
+      "updateSuccess": "Business unit updated successfully",
+      "updateFailed": "Failed to update business unit",
+      "deleteSuccess": "Business unit deleted successfully",
+      "deleteFailed": "Failed to delete business unit",
+      "confirmDelete": "Are you sure you want to delete this business unit?",
+      "fetchFailed": "Failed to fetch business units",
+      "saveFailed": "Failed to save business unit"
+    }
+  },
+  "branding": {
+    "title": "App Branding",
+    "subtitle": "Customize the appearance of your application",
+    "appName": "Application Name",
+    "appNamePlaceholder": "Enter application name",
+    "primaryColor": "Primary Color",
+    "secondaryColor": "Secondary Color",
+    "logo": "Logo",
+    "uploadLogo": "Upload Logo",
+    "changeLogo": "Change Logo",
+    "removeLogo": "Remove Logo",
+    "preview": "Preview",
+    "resetToDefault": "Reset to Default",
+    "messages": {
+      "updateSuccess": "Branding updated successfully",
+      "updateFailed": "Failed to update branding",
+      "resetSuccess": "Branding reset to default",
+      "logoUploadSuccess": "Logo uploaded successfully",
+      "logoUploadFailed": "Failed to upload logo",
+      "fetchFailed": "Failed to fetch branding",
+      "saveFailed": "Failed to save branding"
+    }
+  },
+  "microsoftSync": {
+    "title": "Microsoft 365 Sync",
+    "subtitle": "Synchronize users and groups from Microsoft 365",
+    "tabs": {
+      "users": "Users",
+      "groups": "Groups",
+      "history": "Sync History"
+    },
+    "sync": {
+      "syncNow": "Sync Now",
+      "lastSync": "Last Sync",
+      "never": "Never",
+      "autoSync": "Auto Sync",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "syncInterval": "Sync Interval",
+      "selectInterval": "Select Interval"
+    },
+    "users": {
+      "title": "User Sync",
+      "syncUsers": "Sync Users",
+      "totalUsers": "Total Users",
+      "syncedUsers": "Synced Users",
+      "pendingUsers": "Pending Sync"
+    },
+    "groups": {
+      "title": "Group Sync",
+      "syncGroups": "Sync Groups",
+      "totalGroups": "Total Groups",
+      "syncedGroups": "Synced Groups",
+      "mapToBusinessUnit": "Map to Business Unit"
+    },
+    "history": {
+      "title": "Sync History",
+      "columns": {
+        "date": "Date",
+        "type": "Type",
+        "status": "Status",
+        "itemsSynced": "Items Synced",
+        "duration": "Duration",
+        "details": "Details"
+      },
+      "types": {
+        "users": "Users",
+        "groups": "Groups",
+        "all": "All"
+      }
+    },
+    "messages": {
+      "syncStarted": "Synchronization started",
+      "syncSuccess": "Synchronization completed successfully",
+      "syncFailed": "Synchronization failed",
+      "configUpdateSuccess": "Sync configuration updated",
+      "configUpdateFailed": "Failed to update sync configuration",
+      "consentWindowFailed": "Failed to open consent window. Please allow popups.",
+      "consentWindowClosed": "Consent window closed. Checking status...",
+      "authWindowFailed": "Failed to open authentication window. Please allow popups.",
+      "tokenReceived": "Microsoft token received",
+      "refreshingHistory": "Refreshing sync history...",
+      "selectAtLeastOne": "Please select at least one {{item}} or use \"Sync All\"",
+      "syncError": "{{name}}: {{error}}"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Il Mio Team",
+  "subtitle": "Visualizza i membri del tuo team e la loro disponibilità",
+  "noTeamMembers": "Non hai ancora membri del team.",
+  "member": "Membro del Team",
+  "availability": "Disponibilità",
+  "status": "Stato",
+  "onLeave": "In Ferie",
+  "available": "Disponibile",
+  "until": "Fino al",
+  "viewCalendar": "Visualizza Calendario",
+  "loading": "Caricamento...",
+  "messages": {
+    "fetchFailed": "Impossibile recuperare i membri del team"
+  },
+  "filters": {
+    "all": "Tutti i Membri",
+    "available": "Disponibili",
+    "onLeave": "In Ferie"
+  }
+}

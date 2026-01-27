@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
 import { toast } from 'sonner';
 import {
@@ -32,6 +33,7 @@ import {
 import { Add, Edit, Delete, PersonAdd, Close } from '@mui/icons-material';
 
 const Users = () => {
+  const { t } = useTranslation('admin');
   const [users, setUsers] = useState([]);
   const [businessUnits, setBusinessUnits] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ const Users = () => {
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
-      toast.error('Failed to fetch users');
+      toast.error(t('users.messages.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,7 @@ const Users = () => {
       setBusinessUnits(response.data);
     } catch (error) {
       console.error('Error fetching business units:', error);
-      toast.error('Failed to fetch business units');
+      toast.error(t('users.messages.fetchBusinessUnitsFailed'));
     }
   };
 
@@ -90,7 +92,7 @@ const Users = () => {
       setUserBusinessUnits(response.data.business_units || []);
     } catch (error) {
       console.error('Error fetching user business units:', error);
-      toast.error('Failed to fetch user business units');
+      toast.error(t('users.messages.fetchUserBusinessUnitsFailed'));
     }
   };
 
@@ -152,7 +154,7 @@ const Users = () => {
 
     // Validate business units for new users
     if (!editingUser && formData.business_unit_ids.length === 0) {
-      toast.error('Please select at least one business unit');
+      toast.error(t('forms:validation.selectAtLeastOne', { item: t('users.form.businessUnits').toLowerCase() }));
       return;
     }
 
@@ -161,30 +163,30 @@ const Users = () => {
         // Update existing user (business units managed separately)
         const { business_unit_ids, ...updateData } = formData;
         await api.put(`/users/${editingUser.id}`, updateData);
-        toast.success('User updated successfully');
+        toast.success(t('users.messages.updateSuccess'));
       } else {
         // Create new user with business units
         await api.post('/users', formData);
-        toast.success('User created successfully');
+        toast.success(t('users.messages.createSuccess'));
       }
 
       handleCloseDialog();
       fetchUsers();
     } catch (error) {
       console.error('Error saving user:', error);
-      toast.error(error.response?.data?.detail || 'Failed to save user');
+      toast.error(error.response?.data?.detail || t('users.messages.saveFailed'));
     }
   };
 
   const handleDelete = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm(t('users.messages.confirmDelete'))) {
       try {
         await api.delete(`/users/${userId}`);
-        toast.success('User deleted successfully');
+        toast.success(t('users.messages.deleteSuccess'));
         fetchUsers();
       } catch (error) {
         console.error('Error deleting user:', error);
-        toast.error(error.response?.data?.detail || 'Failed to delete user');
+        toast.error(error.response?.data?.detail || t('users.messages.deleteFailed'));
       }
     }
   };
@@ -203,10 +205,10 @@ const Users = () => {
         fetchUsers()
       ]);
 
-      toast.success('Business unit added successfully');
+      toast.success(t('users.messages.businessUnitAddSuccess'));
     } catch (error) {
       console.error('Error adding business unit:', error);
-      toast.error(error.response?.data?.detail || 'Failed to add business unit');
+      toast.error(error.response?.data?.detail || t('users.messages.businessUnitAddFailed'));
     }
   };
 
@@ -215,7 +217,7 @@ const Users = () => {
 
     // Check if this is the last business unit
     if (userBusinessUnits.length <= 1) {
-      toast.error('User must belong to at least one business unit');
+      toast.error(t('users.messages.businessUnitRequired'));
       return;
     }
 
@@ -229,10 +231,10 @@ const Users = () => {
         fetchUsers()
       ]);
 
-      toast.success('Business unit removed successfully');
+      toast.success(t('users.messages.businessUnitRemoveSuccess'));
     } catch (error) {
       console.error('Error removing business unit:', error);
-      toast.error(error.response?.data?.detail || 'Failed to remove business unit');
+      toast.error(error.response?.data?.detail || t('users.messages.businessUnitRemoveFailed'));
     }
   };
 

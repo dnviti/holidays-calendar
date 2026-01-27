@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
 import {
@@ -24,17 +25,18 @@ import * as yup from 'yup';
 
 const Login = () => {
   const { branding } = useTheme();
+  const { t } = useTranslation('auth');
 
   // Define validation schema
   const validationSchema = yup.object().shape({
     email: yup
       .string()
-      .email('Please enter a valid email address')
-      .required('Email is required'),
+      .email(t('validation.emailInvalid'))
+      .required(t('validation.emailRequired')),
     password: yup
       .string()
-      .min(6, 'Password must be at least 6 characters')
-      .required('Password is required')
+      .min(6, t('validation.passwordMinLength', { min: 6 }))
+      .required(t('validation.passwordRequired'))
   });
 
   // Initialize form
@@ -75,7 +77,7 @@ const Login = () => {
       window.location.href = '/';
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.detail || t('validation.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -161,7 +163,7 @@ const Login = () => {
                 mb: 3
               }}
             >
-              Sign in to continue
+              {t('login.title')}
             </Typography>
 
             {/* Error Message */}
@@ -188,14 +190,14 @@ const Login = () => {
               <Stack spacing={3}>
                 <TextField
                   fullWidth
-                  label="Email Address"
+                  label={t('login.email')}
                   type="email"
                   variant="outlined"
                   {...register('email')}
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   autoComplete="email"
-                  placeholder="name@company.com"
+                  placeholder={t('login.emailPlaceholder')}
                   InputProps={{
                     sx: {
                       borderRadius: 2,
@@ -207,13 +209,13 @@ const Login = () => {
                 />
 
                 <FormControl fullWidth variant="outlined" error={!!errors.password}>
-                  <InputLabel htmlFor="password-input">Password</InputLabel>
+                  <InputLabel htmlFor="password-input">{t('login.password')}</InputLabel>
                   <OutlinedInput
                     id="password-input"
                     type={showPassword ? 'text' : 'password'}
                     {...register('password')}
                     autoComplete="current-password"
-                    placeholder="••••••••"
+                    placeholder={t('login.passwordPlaceholder')}
                     endAdornment={
                       <InputAdornment position="end">
                         <IconButton
@@ -226,7 +228,7 @@ const Login = () => {
                         </IconButton>
                       </InputAdornment>
                     }
-                    label="Password"
+                    label={t('login.password')}
                     sx={{
                       borderRadius: 2,
                     }}
@@ -256,7 +258,7 @@ const Login = () => {
                     }
                   }}
                 >
-                  {loading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Sign In'}
+                  {loading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : t('login.signIn')}
                 </Button>
               </Stack>
             </Box>
@@ -284,7 +286,7 @@ const Login = () => {
                   mx: 1
                 }}
               >
-                Or continue with
+                {t('login.orDivider')}
               </Typography>
               <Box sx={{
                 flexGrow: 1,
@@ -329,7 +331,7 @@ const Login = () => {
                 <path d="M1 11H10V20H1V11Z" fill="#00A4EF" />
                 <path d="M11 11H20V20H11V11Z" fill="#FFB900" />
               </Box>
-              Sign in with Microsoft 365
+              {t('login.signInWithMicrosoft')}
             </Button>
           </Stack>
         </Paper>

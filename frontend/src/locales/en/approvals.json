@@ -1,0 +1,44 @@
+{
+  "title": "Leave Approvals",
+  "subtitle": "Review and approve leave requests from your team",
+  "noPendingRequests": "No pending requests at the moment.",
+  "employee": "Employee",
+  "dateRange": "Date Range",
+  "duration": "Duration",
+  "reason": "Reason",
+  "requestedOn": "Requested On",
+  "actions": "Actions",
+  "approve": "Approve",
+  "reject": "Reject",
+  "viewDetails": "View Details",
+  "loading": "Loading...",
+  "days": "days",
+  "overlapWarning": "Warning: Overlaps with {{users}}",
+  "confirmApprove": {
+    "title": "Approve Leave Request",
+    "message": "Are you sure you want to approve this leave request for {{name}}?",
+    "confirm": "Approve",
+    "cancel": "Cancel"
+  },
+  "confirmReject": {
+    "title": "Reject Leave Request",
+    "message": "Are you sure you want to reject this leave request for {{name}}?",
+    "reason": "Rejection Reason (Optional)",
+    "reasonPlaceholder": "Enter reason for rejection",
+    "confirm": "Reject",
+    "cancel": "Cancel"
+  },
+  "messages": {
+    "approveSuccess": "Request {{action}}d successfully",
+    "approveFailed": "Failed to {{action}} request",
+    "rejectSuccess": "Request rejected successfully",
+    "rejectFailed": "Failed to reject request",
+    "fetchFailed": "Failed to fetch pending approvals"
+  },
+  "filters": {
+    "all": "All Requests",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  }
+}

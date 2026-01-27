@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -19,6 +20,7 @@ import GroupSyncTab from '../../components/sync/GroupSyncTab';
 import SyncHistoryPanel from '../../components/sync/SyncHistoryPanel';
 
 const MicrosoftSync = () => {
+  const { t } = useTranslation('admin');
   const [activeTab, setActiveTab] = useState(0);
   const [syncStatus, setSyncStatus] = useState(null);
   const [msToken, setMsToken] = useState(null);
@@ -41,7 +43,7 @@ const MicrosoftSync = () => {
       const status = await getSyncStatus(msToken);
       setSyncStatus(status);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || t('microsoftSync.messages.syncFailed'));
     } finally {
       setLoading(false);
     }
@@ -64,7 +66,7 @@ const MicrosoftSync = () => {
       );
 
       if (!consentWindow) {
-        toast.error('Failed to open consent window. Please allow popups.');
+        toast.error(t('microsoftSync.messages.consentWindowFailed'));
         return;
       }
 
@@ -72,7 +74,7 @@ const MicrosoftSync = () => {
       const checkClosed = setInterval(async () => {
         if (consentWindow.closed) {
           clearInterval(checkClosed);
-          toast.info('Consent window closed. Checking status...');
+          toast.info(t('microsoftSync.messages.consentWindowClosed'));
 
           // Check if consent was granted
           // In a real implementation, you'd need to handle the callback
@@ -81,7 +83,7 @@ const MicrosoftSync = () => {
         }
       }, 500);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || t('microsoftSync.messages.syncFailed'));
     }
   };
 
@@ -99,7 +101,7 @@ const MicrosoftSync = () => {
     );
 
     if (!authWindow) {
-      toast.error('Failed to open authentication window. Please allow popups.');
+      toast.error(t('microsoftSync.messages.authWindowFailed'));
       return;
     }
 
@@ -113,7 +115,7 @@ const MicrosoftSync = () => {
 
         setMsToken(event.data.token);
         sessionStorage.setItem('ms_sync_token', event.data.token);
-        toast.success('Microsoft token received');
+        toast.success(t('microsoftSync.messages.tokenReceived'));
         checkSyncStatus();
       }
     };
@@ -131,7 +133,7 @@ const MicrosoftSync = () => {
 
   const handleSyncComplete = () => {
     setRefreshTrigger(prev => prev + 1);
-    toast.info('Refreshing sync history...');
+    toast.info(t('microsoftSync.messages.refreshingHistory'));
   };
 
   const handleTabChange = (event, newValue) => {

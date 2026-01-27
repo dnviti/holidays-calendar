@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
 import { toast } from 'sonner';
 import {
@@ -31,6 +32,7 @@ import {
 import { Add, Edit, Delete } from '@mui/icons-material';
 
 const AdminBranding = () => {
+  const { t } = useTranslation('admin');
   const [branding, setBranding] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -60,7 +62,7 @@ const AdminBranding = () => {
       setFormData(response.data);
     } catch (error) {
       console.error('Error fetching branding:', error);
-      toast.error('Failed to fetch branding');
+      toast.error(t('branding.messages.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -136,20 +138,20 @@ const AdminBranding = () => {
         });
 
         setBranding(response.data);
-        toast.success('Branding updated successfully');
+        toast.success(t('branding.messages.updateSuccess'));
       } else {
         // If no logo change, use PUT request with JSON
         const { logo_url, ...jsonFormData } = formData; // Exclude logo_url from JSON submission
         const response = await api.put('/branding', jsonFormData);
 
         setBranding(response.data);
-        toast.success('Branding updated successfully');
+        toast.success(t('branding.messages.updateSuccess'));
       }
 
       handleCloseDialog();
     } catch (error) {
       console.error('Error saving branding:', error);
-      toast.error(error.response?.data?.detail || 'Failed to save branding');
+      toast.error(error.response?.data?.detail || t('branding.messages.saveFailed'));
     }
   };
 

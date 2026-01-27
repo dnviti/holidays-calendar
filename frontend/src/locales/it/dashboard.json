@@ -1,0 +1,38 @@
+{
+  "welcome": "Bentornato, {{name}}",
+  "welcomeDefault": "Bentornato",
+  "subtitle": "Ecco la panoramica delle tue ferie",
+  "stats": {
+    "pendingRequests": "Richieste in Attesa",
+    "approvedThisYear": "Approvate (Quest'Anno)",
+    "totalHolidays": "Totale Ferie"
+  },
+  "requestLeave": {
+    "button": "Richiedi Ferie",
+    "title": "Richiedi Ferie",
+    "titleLabel": "Titolo",
+    "titlePlaceholder": "es. Ferie Estive",
+    "startDateLabel": "Data Inizio",
+    "endDateLabel": "Data Fine",
+    "descriptionLabel": "Descrizione",
+    "descriptionPlaceholder": "Facoltativo",
+    "submitButton": "Invia Richiesta",
+    "success": "Richiesta di ferie inviata!",
+    "error": "Impossibile inviare la richiesta"
+  },
+  "messages": {
+    "holidayUpdated": "Ferie aggiornate",
+    "holidayUpdateFailed": "Impossibile aggiornare le ferie"
+  },
+  "calendar": {
+    "title": "Calendario",
+    "viewAll": "Visualizza Tutto"
+  },
+  "upcomingLeave": {
+    "title": "Prossime Ferie",
+    "noUpcoming": "Nessuna ferie programmata",
+    "today": "Oggi",
+    "tomorrow": "Domani",
+    "inDays": "Tra {{count}} giorni"
+  }
+}

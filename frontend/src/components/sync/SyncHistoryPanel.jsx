@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -90,6 +91,7 @@ const SyncHistoryRow = ({ log }) => {
 };
 
 const SyncHistoryPanel = ({ refreshTrigger }) => {
+  const { t } = useTranslation('admin');
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -103,7 +105,7 @@ const SyncHistoryPanel = ({ refreshTrigger }) => {
       const data = await getSyncHistory({ limit: 50 });
       setLogs(data);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || t('microsoftSync.messages.syncFailed'));
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,9 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import LanguageSelector from './LanguageSelector';
 import {
   Calendar,
   LogOut,
@@ -36,26 +38,27 @@ import {
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout, isAdmin, isManager } = useAuth();
   const { branding } = useTheme();
+  const { t } = useTranslation('common');
   const muiTheme = useMuiTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('lg'));
 
   const closeSidebar = () => isMobile && setIsOpen(false);
 
   const navItems = [
-    { to: '/', icon: <Briefcase size={20} />, text: 'Dashboard' },
-    { to: '/calendar', icon: <Calendar size={20} />, text: 'Calendar' },
+    { to: '/', icon: <Briefcase size={20} />, text: t('navigation.dashboard') },
+    { to: '/calendar', icon: <Calendar size={20} />, text: t('navigation.calendar') },
   ];
 
   const managerItems = [
-    { to: '/approvals', icon: <span>✓</span>, text: 'Approvals' },
-    { to: '/team', icon: <Users size={20} />, text: 'My Team' },
+    { to: '/approvals', icon: <span>✓</span>, text: t('navigation.approvals') },
+    { to: '/team', icon: <Users size={20} />, text: t('navigation.team') },
   ];
 
   const adminItems = [
-    { to: '/admin/users', icon: <Users size={20} />, text: 'Users' },
-    { to: '/admin/business-units', icon: <Building2 size={20} />, text: 'Business Units' },
-    { to: '/admin/microsoft-sync', icon: <RefreshCw size={20} />, text: 'Microsoft Sync' },
-    { to: '/admin/branding', icon: <Settings size={20} />, text: 'Branding' },
+    { to: '/admin/users', icon: <Users size={20} />, text: t('navigation.users') },
+    { to: '/admin/business-units', icon: <Building2 size={20} />, text: t('navigation.businessUnits') },
+    { to: '/admin/microsoft-sync', icon: <RefreshCw size={20} />, text: t('navigation.microsoftSync') },
+    { to: '/admin/branding', icon: <Settings size={20} />, text: t('navigation.branding') },
   ];
 
   return (
@@ -131,7 +134,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
         {isManager && (
           <>
-            <Divider sx={{ my: 2 }}>Management</Divider>
+            <Divider sx={{ my: 2 }}>{t('sections.management')}</Divider>
             <List>
               {managerItems.map((item) => (
                 <ListItem key={item.to} disablePadding>
@@ -167,7 +170,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
         {isAdmin && (
           <>
-            <Divider sx={{ my: 2 }}>Administration</Divider>
+            <Divider sx={{ my: 2 }}>{t('sections.administration')}</Divider>
             <List>
               {adminItems.map((item) => (
                 <ListItem key={item.to} disablePadding>
@@ -219,6 +222,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </Typography>
           </Box>
         </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <LanguageSelector />
+        </Box>
         <Button
           onClick={logout}
           startIcon={<LogOut size={16} />}
@@ -226,7 +232,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           variant="outlined"
           sx={{ color: 'error.main', borderColor: 'error.main', '&:hover': { borderColor: 'error.dark' } }}
         >
-          Sign Out
+          {t('navigation.signOut')}
         </Button>
       </Box>
     </Drawer>
@@ -257,9 +263,10 @@ const Layout = () => {
               >
                 <Menu />
               </IconButton>
-              <Typography variant="h6" noWrap component="div" sx={{ color: 'text.primary' }}>
+              <Typography variant="h6" noWrap component="div" sx={{ color: 'text.primary', flexGrow: 1 }}>
                 {window.location.pathname.split('/').pop() || 'Dashboard'}
               </Typography>
+              <LanguageSelector />
             </Toolbar>
           </AppBar>
         )}

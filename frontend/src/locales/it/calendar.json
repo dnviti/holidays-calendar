@@ -1,0 +1,55 @@
+{
+  "title": "Calendario del Team",
+  "subtitle": "Gestisci le richieste di ferie del team e visualizza la disponibilità",
+  "businessUnit": "Unità Aziendale",
+  "allBusinessUnits": "Tutte le Unità Aziendali",
+  "selectBusinessUnit": "Seleziona Unità Aziendale",
+  "views": {
+    "month": "Mese",
+    "week": "Settimana",
+    "day": "Giorno",
+    "list": "Lista"
+  },
+  "today": "Oggi",
+  "event": {
+    "title": "Evento",
+    "allDay": "Tutto il Giorno",
+    "startDate": "Data Inizio",
+    "endDate": "Data Fine",
+    "startTime": "Ora Inizio",
+    "endTime": "Ora Fine",
+    "addEvent": "Aggiungi Evento",
+    "editEvent": "Modifica Evento",
+    "deleteEvent": "Elimina Evento",
+    "viewDetails": "Visualizza Dettagli"
+  },
+  "holiday": {
+    "title": "Ferie",
+    "addHoliday": "Aggiungi Ferie",
+    "editHoliday": "Modifica Ferie",
+    "deleteHoliday": "Elimina Ferie",
+    "requestHoliday": "Richiedi Ferie"
+  },
+  "noBusinessUnits": "Nessuna unità aziendale disponibile",
+  "noBusinessUnitsDescription": "Contatta il tuo amministratore per configurare le unità aziendali.",
+  "messages": {
+    "loading": "Caricamento...",
+    "noEvents": "Nessun evento da visualizzare",
+    "eventCreated": "Evento creato con successo",
+    "eventUpdated": "Evento aggiornato con successo",
+    "eventDeleted": "Evento eliminato con successo",
+    "holidayCreated": "Richiesta di ferie creata con successo!",
+    "holidayUpdated": "Richiesta di ferie aggiornata con successo!",
+    "holidayDeleted": "Richiesta di ferie cancellata con successo!",
+    "leaveApproved": "Richiesta di ferie approvata!",
+    "leaveRejected": "Richiesta di ferie rifiutata",
+    "leaveChangeRequested": "Richiesta di modifica inviata",
+    "leaveDatesUpdated": "Date delle ferie aggiornate con successo!",
+    "fetchBusinessUnitsFailed": "Impossibile recuperare le unità aziendali",
+    "loadCalendarFailed": "Impossibile caricare i dati del calendario",
+    "moveLeaveRequestFailed": "Impossibile spostare la richiesta di ferie",
+    "approveLeaveRequestFailed": "Impossibile approvare la richiesta di ferie",
+    "rejectLeaveRequestFailed": "Impossibile rifiutare la richiesta di ferie",
+    "requestChangeFailed": "Impossibile richiedere la modifica"
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import CalendarView from '../components/CalendarView';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ import {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { t } = useTranslation('dashboard');
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
@@ -68,7 +70,7 @@ const Dashboard = () => {
         business_unit_id: buId
       });
 
-      toast.success('Holiday request submitted!');
+      toast.success(t('requestLeave.success'));
       setIsRequestModalOpen(false);
       setRequestData({
         start_date: '',
@@ -80,7 +82,7 @@ const Dashboard = () => {
       fetchHolidays();
     } catch (error) {
       console.error(error);
-      toast.error('Failed to submit request: ' + (error.response?.data?.detail || error.message));
+      toast.error(t('requestLeave.error') + ': ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -104,11 +106,11 @@ const Dashboard = () => {
         end_date: end
       });
 
-      toast.success('Holiday updated');
+      toast.success(t('messages.holidayUpdated'));
       fetchHolidays();
     } catch (error) {
       console.error(error);
-      toast.error('Failed to update holiday');
+      toast.error(t('messages.holidayUpdateFailed'));
       info.revert();
     }
   };
@@ -134,10 +136,10 @@ const Dashboard = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
-            Welcome back, {user?.display_name}
+            {t('welcome', { name: user?.display_name })}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Here is your holiday overview
+            {t('subtitle')}
           </Typography>
         </Box>
         <MuiButton
@@ -145,7 +147,7 @@ const Dashboard = () => {
           onClick={() => setIsRequestModalOpen(true)}
           sx={{ borderRadius: 2, py: 1, px: 3 }}
         >
-          Request Leave
+          {t('requestLeave.button')}
         </MuiButton>
       </Box>
 
@@ -155,7 +157,7 @@ const Dashboard = () => {
           <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
             <MuiCardContent>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Pending Requests
+                {t('stats.pendingRequests')}
               </Typography>
               <Typography variant="h4" component="div" fontWeight="bold">
                 {holidays.filter(h => h.status === 'pending').length}
@@ -168,7 +170,7 @@ const Dashboard = () => {
           <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
             <MuiCardContent>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Approved (This Year)
+                {t('stats.approvedThisYear')}
               </Typography>
               <Typography
                 variant="h4"
@@ -186,7 +188,7 @@ const Dashboard = () => {
           <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
             <MuiCardContent>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Total Holidays
+                {t('stats.totalHolidays')}
               </Typography>
               <Typography variant="h4" component="div" fontWeight="bold">
                 {holidays.length}
@@ -206,16 +208,16 @@ const Dashboard = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ pb: 1 }}>Request Leave</DialogTitle>
+        <DialogTitle sx={{ pb: 1 }}>{t('requestLeave.title')}</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <Box component="form" onSubmit={handleRequestSubmit} sx={{ mt: 1 }}>
             <TextField
               fullWidth
-              label="Title"
+              label={t('requestLeave.titleLabel')}
               value={requestData.title}
               onChange={e => setRequestData({ ...requestData, title: e.target.value })}
               required
-              placeholder="e.g. Summer Vacation"
+              placeholder={t('requestLeave.titlePlaceholder')}
               margin="normal"
               variant="outlined"
               sx={{ mb: 2 }}
@@ -224,7 +226,7 @@ const Dashboard = () => {
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Start Date"
+                  label={t('requestLeave.startDateLabel')}
                   type="date"
                   value={requestData.start_date}
                   onChange={e => setRequestData({ ...requestData, start_date: e.target.value })}
@@ -236,7 +238,7 @@ const Dashboard = () => {
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="End Date"
+                  label={t('requestLeave.endDateLabel')}
                   type="date"
                   value={requestData.end_date}
                   onChange={e => setRequestData({ ...requestData, end_date: e.target.value })}
@@ -248,10 +250,10 @@ const Dashboard = () => {
             </Grid>
             <TextField
               fullWidth
-              label="Description"
+              label={t('requestLeave.descriptionLabel')}
               value={requestData.description}
               onChange={e => setRequestData({ ...requestData, description: e.target.value })}
-              placeholder="Optional"
+              placeholder={t('requestLeave.descriptionPlaceholder')}
               multiline
               rows={3}
               margin="normal"
@@ -265,14 +267,14 @@ const Dashboard = () => {
             variant="outlined"
             sx={{ borderRadius: 2, px: 3 }}
           >
-            Cancel
+            {t('common:actions.cancel', 'Cancel')}
           </MuiButton>
           <MuiButton
             onClick={handleRequestSubmit}
             variant="contained"
             sx={{ borderRadius: 2, px: 3 }}
           >
-            Submit Request
+            {t('requestLeave.submitButton')}
           </MuiButton>
         </DialogActions>
       </Dialog>

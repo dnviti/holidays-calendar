@@ -1,0 +1,108 @@
+{
+  "labels": {
+    "title": "Title",
+    "description": "Description",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "allDay": "All Day",
+    "type": "Type",
+    "status": "Status",
+    "notes": "Notes",
+    "reason": "Reason",
+    "employee": "Employee",
+    "businessUnit": "Business Unit",
+    "manager": "Manager"
+  },
+  "placeholders": {
+    "title": "Enter title",
+    "titleExample": "e.g., Summer Vacation",
+    "description": "Enter description",
+    "descriptionOptional": "Optional details about your leave",
+    "selectDate": "Select date",
+    "selectTime": "Select time",
+    "selectType": "Select type",
+    "selectStatus": "Select status",
+    "selectEmployee": "Select employee",
+    "selectBusinessUnit": "Select business unit",
+    "selectManager": "Select manager",
+    "enterNotes": "Enter notes",
+    "enterReason": "Enter reason"
+  },
+  "validation": {
+    "required": "This field is required",
+    "requiredField": "{{field}} is required",
+    "invalidEmail": "Invalid email address",
+    "invalidDate": "Invalid date",
+    "invalidTime": "Invalid time",
+    "startDateBeforeEnd": "Start date must be before end date",
+    "endDateAfterStart": "End date must be after or equal to start date",
+    "minLength": "Must be at least {{min}} characters",
+    "maxLength": "Must be at most {{max}} characters",
+    "passwordsNotMatch": "Passwords do not match",
+    "minValue": "Must be at least {{min}}",
+    "maxValue": "Must be at most {{max}}",
+    "selectBusinessUnit": "Please select a business unit",
+    "selectAtLeastOne": "Please select at least one {{item}}"
+  },
+  "types": {
+    "holiday": "Holiday",
+    "vacation": "Vacation",
+    "sickLeave": "Sick Leave",
+    "sick_leave": "Sick Leave",
+    "personal": "Personal",
+    "personalLeave": "Personal Leave",
+    "parental": "Parental Leave",
+    "maternityLeave": "Maternity Leave",
+    "paternityLeave": "Paternity Leave",
+    "other": "Other"
+  },
+  "leaveRequest": {
+    "title": "New Leave Request",
+    "editTitle": "Edit Leave Request",
+    "leaveType": "Leave Type",
+    "halfDay": "Half Day",
+    "halfDayPeriod": "Half Day Period",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "cancel": "Cancel",
+    "submit": "Submit Request",
+    "update": "Update Request",
+    "createFailed": "Failed to create leave request"
+  },
+  "overlapCheck": {
+    "checking": "Checking for overlapping holidays...",
+    "warningTitle": "Overlap Warning",
+    "warningMessage": "The following team members are also off during this period:"
+  },
+  "status": {
+    "pending": "Pending Approval",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "changeRequested": "Change Requested",
+    "cancelled": "Cancelled"
+  },
+  "confirmations": {
+    "deleteLeaveRequest": "Are you sure you want to cancel this leave request?",
+    "approveLeaveRequest": "Are you sure you want to approve this leave request?",
+    "provideNotes": "Please provide notes for this action"
+  },
+  "dialog": {
+    "teamMember": "Team Member",
+    "halfDay": "Half Day",
+    "teamOverlap": "Team Overlap",
+    "teamOverlapMessage": "Other team members are also off during this period",
+    "managerNotes": "Manager Notes:",
+    "rejectionReason": "Rejection Reason *",
+    "changeRequestNotes": "Change Request Notes *",
+    "provideFeedback": "Provide feedback to the employee...",
+    "edit": "Edit",
+    "cancelRequest": "Cancel Request",
+    "approve": "Approve",
+    "requestChange": "Request Change",
+    "reject": "Reject",
+    "close": "Close",
+    "submit": "Submit"
+  }
+}

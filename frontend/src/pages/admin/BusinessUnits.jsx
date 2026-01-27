@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
 import { toast } from 'sonner';
 import {
@@ -30,6 +31,7 @@ import {
 import { Add, Edit, Delete } from '@mui/icons-material';
 
 const BusinessUnits = () => {
+  const { t } = useTranslation('admin');
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -51,7 +53,7 @@ const BusinessUnits = () => {
       setUnits(response.data);
     } catch (error) {
       console.error('Error fetching business units:', error);
-      toast.error('Failed to fetch business units');
+      toast.error(t('businessUnits.messages.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -104,30 +106,30 @@ const BusinessUnits = () => {
       if (editingUnit) {
         // Update existing unit
         await api.put(`/business-units/${editingUnit.id}`, formData);
-        toast.success('Business Unit updated successfully');
+        toast.success(t('businessUnits.messages.updateSuccess'));
       } else {
         // Create new unit
         await api.post('/business-units', formData);
-        toast.success('Business Unit created successfully');
+        toast.success(t('businessUnits.messages.createSuccess'));
       }
 
       handleCloseDialog();
       fetchUnits();
     } catch (error) {
       console.error('Error saving business unit:', error);
-      toast.error(error.response?.data?.detail || 'Failed to save business unit');
+      toast.error(error.response?.data?.detail || t('businessUnits.messages.saveFailed'));
     }
   };
 
   const handleDelete = async (unitId) => {
-    if (window.confirm('Are you sure you want to delete this business unit?')) {
+    if (window.confirm(t('businessUnits.messages.confirmDelete'))) {
       try {
         await api.delete(`/business-units/${unitId}`);
-        toast.success('Business Unit deleted successfully');
+        toast.success(t('businessUnits.messages.deleteSuccess'));
         fetchUnits();
       } catch (error) {
         console.error('Error deleting business unit:', error);
-        toast.error(error.response?.data?.detail || 'Failed to delete business unit');
+        toast.error(error.response?.data?.detail || t('businessUnits.messages.deleteFailed'));
       }
     }
   };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import CalendarView from '../components/CalendarView';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +23,7 @@ import {
 } from '../services/holidayService';
 
 const CalendarPage = () => {
+  const { t } = useTranslation('calendar');
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBU, setSelectedBU] = useState('');
@@ -51,7 +53,7 @@ const CalendarPage = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to fetch business units');
+      toast.error(t('messages.fetchBusinessUnitsFailed'));
       setLoading(false);
     }
   };
@@ -94,7 +96,7 @@ const CalendarPage = () => {
       setCalendarEvents(transformedHolidays);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to load calendar data');
+      toast.error(t('messages.loadCalendarFailed'));
     } finally {
       setLoading(false);
       setLoadingEvents(false);
@@ -131,9 +133,9 @@ const CalendarPage = () => {
 
       // Add the new holiday to the calendar
       setCalendarEvents(prev => [...prev, transformedHoliday]);
-      toast.success('Leave request created successfully!');
+      toast.success(t('messages.holidayCreated'));
     } catch (error) {
-      toast.error('Failed to create leave request');
+      toast.error(t('messages.holidayCreated'));
     }
   };
 
@@ -172,10 +174,10 @@ const CalendarPage = () => {
       };
 
       setCalendarEvents(prev => prev.map(e => e.id === id ? transformedHoliday : e));
-      toast.success('Leave request updated successfully!');
+      toast.success(t('messages.holidayUpdated'));
     } catch (error) {
       console.error('Update error:', error);
-      toast.error('Failed to update leave request');
+      toast.error(t('messages.holidayUpdated'));
     }
   };
 
@@ -220,9 +222,9 @@ const CalendarPage = () => {
         prev.map(e => e.id === dropInfo.event.id ? transformedHoliday : e)
       );
 
-      toast.success('Leave dates updated successfully!');
+      toast.success(t('messages.leaveDatesUpdated'));
     } catch (error) {
-      toast.error('Failed to move leave request');
+      toast.error(t('messages.moveLeaveRequestFailed'));
       // Revert the drop
       dropInfo.revert();
     }
@@ -235,9 +237,9 @@ const CalendarPage = () => {
 
       // Remove the holiday from the calendar
       setCalendarEvents(prev => prev.filter(e => e.id !== holidayId));
-      toast.success('Leave request cancelled successfully!');
+      toast.success(t('messages.holidayDeleted'));
     } catch (error) {
-      toast.error('Failed to cancel leave request');
+      toast.error(t('messages.holidayDeleted'));
     }
   };
 
@@ -272,9 +274,9 @@ const CalendarPage = () => {
       };
 
       setCalendarEvents(prev => prev.map(e => e.id === holidayId ? transformedHoliday : e));
-      toast.success('Leave request approved!');
+      toast.success(t('messages.leaveApproved'));
     } catch (error) {
-      toast.error('Failed to approve leave request');
+      toast.error(t('messages.approveLeaveRequestFailed'));
     }
   };
 
@@ -309,9 +311,9 @@ const CalendarPage = () => {
       };
 
       setCalendarEvents(prev => prev.map(e => e.id === holidayId ? transformedHoliday : e));
-      toast.success('Leave request rejected');
+      toast.success(t('messages.leaveRejected'));
     } catch (error) {
-      toast.error('Failed to reject leave request');
+      toast.error(t('messages.rejectLeaveRequestFailed'));
     }
   };
 
@@ -346,9 +348,9 @@ const CalendarPage = () => {
       };
 
       setCalendarEvents(prev => prev.map(e => e.id === holidayId ? transformedHoliday : e));
-      toast.success('Change requested');
+      toast.success(t('messages.leaveChangeRequested'));
     } catch (error) {
-      toast.error('Failed to request change');
+      toast.error(t('messages.requestChangeFailed'));
     }
   };
 
@@ -367,10 +369,10 @@ const CalendarPage = () => {
       >
         <Box>
           <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-            Team Calendar
+            {t('title')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Manage team leave requests and view availability
+            {t('subtitle')}
           </Typography>
         </Box>
 
@@ -380,11 +382,11 @@ const CalendarPage = () => {
             minWidth: { xs: '100%', md: 250 }
           }}
         >
-          <InputLabel>Select Business Unit</InputLabel>
+          <InputLabel>{t('selectBusinessUnit')}</InputLabel>
           <Select
             value={selectedBU}
             onChange={(e) => setSelectedBU(e.target.value)}
-            label="Select Business Unit"
+            label={t('selectBusinessUnit')}
             disabled={loading}
           >
             {businessUnits.map((bu) => (
@@ -426,10 +428,10 @@ const CalendarPage = () => {
             }}
           >
             <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
-              No business units available
+              {t('noBusinessUnits')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Please contact your administrator to set up business units.
+              {t('noBusinessUnitsDescription')}
             </Typography>
           </Box>
         ) : (

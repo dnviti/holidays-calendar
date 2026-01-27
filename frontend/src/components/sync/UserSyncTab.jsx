@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -26,6 +27,7 @@ import { toast } from 'sonner';
 import { listMicrosoftUsers, syncUsers } from '../../services/syncApi';
 
 const UserSyncTab = ({ msToken, onSyncComplete }) => {
+  const { t } = useTranslation('admin');
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState(new Set());
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,7 @@ const UserSyncTab = ({ msToken, onSyncComplete }) => {
       });
       setUsers(data);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || t('microsoftSync.messages.syncFailed'));
     } finally {
       setLoading(false);
     }
@@ -74,7 +76,7 @@ const UserSyncTab = ({ msToken, onSyncComplete }) => {
 
   const handleSync = async () => {
     if (selectedUsers.size === 0 && users.length > 0) {
-      toast.error('Please select at least one user or use "Sync All"');
+      toast.error(t('microsoftSync.messages.selectAtLeastOne', { item: t('microsoftSync.users.syncUsers').toLowerCase() }));
       return;
     }
 
@@ -95,7 +97,7 @@ const UserSyncTab = ({ msToken, onSyncComplete }) => {
 
         if (result.errors.length > 0) {
           result.errors.forEach(error => {
-            toast.error(`${error.name}: ${error.error}`);
+            toast.error(t('microsoftSync.messages.syncError', { name: error.name, error: error.error }));
           });
         }
 
@@ -106,10 +108,10 @@ const UserSyncTab = ({ msToken, onSyncComplete }) => {
         // Clear selection after successful sync
         setSelectedUsers(new Set());
       } else {
-        toast.error('Sync failed');
+        toast.error(t('microsoftSync.messages.syncFailed'));
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || t('microsoftSync.messages.syncFailed'));
     } finally {
       setSyncing(false);
     }

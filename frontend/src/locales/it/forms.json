@@ -1,0 +1,108 @@
+{
+  "labels": {
+    "title": "Titolo",
+    "description": "Descrizione",
+    "startDate": "Data Inizio",
+    "endDate": "Data Fine",
+    "startTime": "Ora Inizio",
+    "endTime": "Ora Fine",
+    "allDay": "Tutto il Giorno",
+    "type": "Tipo",
+    "status": "Stato",
+    "notes": "Note",
+    "reason": "Motivo",
+    "employee": "Dipendente",
+    "businessUnit": "Unità Aziendale",
+    "manager": "Manager"
+  },
+  "placeholders": {
+    "title": "Inserisci titolo",
+    "titleExample": "es., Vacanze Estive",
+    "description": "Inserisci descrizione",
+    "descriptionOptional": "Dettagli opzionali sulla tua assenza",
+    "selectDate": "Seleziona data",
+    "selectTime": "Seleziona ora",
+    "selectType": "Seleziona tipo",
+    "selectStatus": "Seleziona stato",
+    "selectEmployee": "Seleziona dipendente",
+    "selectBusinessUnit": "Seleziona unità aziendale",
+    "selectManager": "Seleziona manager",
+    "enterNotes": "Inserisci note",
+    "enterReason": "Inserisci motivo"
+  },
+  "validation": {
+    "required": "Questo campo è obbligatorio",
+    "requiredField": "{{field}} è obbligatorio",
+    "invalidEmail": "Indirizzo email non valido",
+    "invalidDate": "Data non valida",
+    "invalidTime": "Ora non valida",
+    "startDateBeforeEnd": "La data di inizio deve essere precedente alla data di fine",
+    "endDateAfterStart": "La data di fine deve essere uguale o successiva alla data di inizio",
+    "minLength": "Deve contenere almeno {{min}} caratteri",
+    "maxLength": "Deve contenere al massimo {{max}} caratteri",
+    "passwordsNotMatch": "Le password non corrispondono",
+    "minValue": "Deve essere almeno {{min}}",
+    "maxValue": "Deve essere al massimo {{max}}",
+    "selectBusinessUnit": "Seleziona un'unità aziendale",
+    "selectAtLeastOne": "Seleziona almeno {{item}}"
+  },
+  "types": {
+    "holiday": "Ferie",
+    "vacation": "Vacanza",
+    "sickLeave": "Congedo Malattia",
+    "sick_leave": "Congedo Malattia",
+    "personal": "Personale",
+    "personalLeave": "Permesso Personale",
+    "parental": "Congedo Parentale",
+    "maternityLeave": "Congedo Maternità",
+    "paternityLeave": "Congedo Paternità",
+    "other": "Altro"
+  },
+  "leaveRequest": {
+    "title": "Nuova Richiesta Ferie",
+    "editTitle": "Modifica Richiesta Ferie",
+    "leaveType": "Tipo Permesso",
+    "halfDay": "Mezza Giornata",
+    "halfDayPeriod": "Periodo Mezza Giornata",
+    "morning": "Mattina",
+    "afternoon": "Pomeriggio",
+    "cancel": "Annulla",
+    "submit": "Invia Richiesta",
+    "update": "Aggiorna Richiesta",
+    "createFailed": "Impossibile creare la richiesta di ferie"
+  },
+  "overlapCheck": {
+    "checking": "Verifica sovrapposizioni ferie in corso...",
+    "warningTitle": "Avviso Sovrapposizione",
+    "warningMessage": "I seguenti membri del team sono già assenti durante questo periodo:"
+  },
+  "status": {
+    "pending": "In Attesa di Approvazione",
+    "approved": "Approvata",
+    "rejected": "Rifiutata",
+    "changeRequested": "Modifica Richiesta",
+    "cancelled": "Annullata"
+  },
+  "confirmations": {
+    "deleteLeaveRequest": "Sei sicuro di voler annullare questa richiesta di ferie?",
+    "approveLeaveRequest": "Sei sicuro di voler approvare questa richiesta di ferie?",
+    "provideNotes": "Fornisci note per questa azione"
+  },
+  "dialog": {
+    "teamMember": "Membro del Team",
+    "halfDay": "Mezza Giornata",
+    "teamOverlap": "Sovrapposizione Team",
+    "teamOverlapMessage": "Altri membri del team sono assenti durante questo periodo",
+    "managerNotes": "Note del Manager:",
+    "rejectionReason": "Motivo del Rifiuto *",
+    "changeRequestNotes": "Note Richiesta Modifica *",
+    "provideFeedback": "Fornisci un feedback al dipendente...",
+    "edit": "Modifica",
+    "cancelRequest": "Annulla Richiesta",
+    "approve": "Approva",
+    "requestChange": "Richiedi Modifica",
+    "reject": "Rifiuta",
+    "close": "Chiudi",
+    "submit": "Invia"
+  }
+}

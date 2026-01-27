@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
@@ -14,6 +15,7 @@ import {
 } from '@mui/material';
 
 const Team = () => {
+  const { t } = useTranslation('team');
   const { user } = useAuth();
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ const Team = () => {
       setTeamMembers(Array.from(membersMap.values()));
     } catch (error) {
       console.error(error);
-      toast.error('Failed to fetch team members');
+      toast.error(t('messages.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ const Team = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-        <Typography>Loading...</Typography>
+        <Typography>{t('loading')}</Typography>
       </Box>
     );
   }
@@ -71,7 +73,7 @@ const Team = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        My Team
+        {t('title')}
       </Typography>
 
       <Grid container spacing={3}>
@@ -114,7 +116,7 @@ const Team = () => {
       {teamMembers.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 10 }}>
           <Typography variant="body1" color="text.secondary">
-            You don't have any team members yet.
+            {t('noTeamMembers')}
           </Typography>
         </Box>
       )}

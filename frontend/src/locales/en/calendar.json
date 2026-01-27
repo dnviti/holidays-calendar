@@ -1,0 +1,55 @@
+{
+  "title": "Team Calendar",
+  "subtitle": "Manage team leave requests and view availability",
+  "businessUnit": "Business Unit",
+  "allBusinessUnits": "All Business Units",
+  "selectBusinessUnit": "Select Business Unit",
+  "views": {
+    "month": "Month",
+    "week": "Week",
+    "day": "Day",
+    "list": "List"
+  },
+  "today": "Today",
+  "event": {
+    "title": "Event",
+    "allDay": "All Day",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "addEvent": "Add Event",
+    "editEvent": "Edit Event",
+    "deleteEvent": "Delete Event",
+    "viewDetails": "View Details"
+  },
+  "holiday": {
+    "title": "Holiday",
+    "addHoliday": "Add Holiday",
+    "editHoliday": "Edit Holiday",
+    "deleteHoliday": "Delete Holiday",
+    "requestHoliday": "Request Holiday"
+  },
+  "noBusinessUnits": "No business units available",
+  "noBusinessUnitsDescription": "Please contact your administrator to set up business units.",
+  "messages": {
+    "loading": "Loading...",
+    "noEvents": "No events to display",
+    "eventCreated": "Event created successfully",
+    "eventUpdated": "Event updated successfully",
+    "eventDeleted": "Event deleted successfully",
+    "holidayCreated": "Leave request created successfully!",
+    "holidayUpdated": "Leave request updated successfully!",
+    "holidayDeleted": "Leave request cancelled successfully!",
+    "leaveApproved": "Leave request approved!",
+    "leaveRejected": "Leave request rejected",
+    "leaveChangeRequested": "Change requested",
+    "leaveDatesUpdated": "Leave dates updated successfully!",
+    "fetchBusinessUnitsFailed": "Failed to fetch business units",
+    "loadCalendarFailed": "Failed to load calendar data",
+    "moveLeaveRequestFailed": "Failed to move leave request",
+    "approveLeaveRequestFailed": "Failed to approve leave request",
+    "rejectLeaveRequestFailed": "Failed to reject leave request",
+    "requestChangeFailed": "Failed to request change"
+  }
+}

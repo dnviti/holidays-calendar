@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogTitle,
@@ -10,6 +11,7 @@ import HolidayForm from './HolidayForm';
 import { createHoliday } from '../services/holidayService';
 
 const HolidayCreationDialog = ({ open, onClose, onSuccess, selectedDate, businessUnits = [], selectedBusinessUnit = null }) => {
+  const { t } = useTranslation('forms');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -34,7 +36,7 @@ const HolidayCreationDialog = ({ open, onClose, onSuccess, selectedDate, busines
       onSuccess(newHoliday);
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to create leave request');
+      setError(err.message || t('leaveRequest.createFailed'));
     } finally {
       setLoading(false);
     }
@@ -55,7 +57,7 @@ const HolidayCreationDialog = ({ open, onClose, onSuccess, selectedDate, busines
       }}
     >
       <DialogTitle sx={{ fontWeight: 600, pb: 2 }}>
-        New Leave Request
+        {t('leaveRequest.title')}
       </DialogTitle>
 
       <Divider />

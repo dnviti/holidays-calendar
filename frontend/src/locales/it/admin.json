@@ -1,0 +1,171 @@
+{
+  "users": {
+    "title": "Gestione Utenti",
+    "subtitle": "Gestisci utenti e i loro ruoli",
+    "addUser": "Aggiungi Utente",
+    "editUser": "Modifica Utente",
+    "deleteUser": "Elimina Utente",
+    "userDetails": "Dettagli Utente",
+    "columns": {
+      "email": "Email",
+      "name": "Nome",
+      "role": "Ruolo",
+      "businessUnits": "Unità Aziendali",
+      "status": "Stato",
+      "actions": "Azioni"
+    },
+    "roles": {
+      "admin": "Amministratore",
+      "bu_manager": "Manager UA",
+      "employee": "Dipendente"
+    },
+    "form": {
+      "email": "Indirizzo Email",
+      "password": "Password",
+      "confirmPassword": "Conferma Password",
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "role": "Ruolo",
+      "businessUnits": "Unità Aziendali",
+      "selectBusinessUnits": "Seleziona Unità Aziendali",
+      "selectRole": "Seleziona Ruolo",
+      "status": "Stato"
+    },
+    "messages": {
+      "createSuccess": "Utente creato con successo",
+      "createFailed": "Impossibile creare l'utente",
+      "updateSuccess": "Utente aggiornato con successo",
+      "updateFailed": "Impossibile aggiornare l'utente",
+      "deleteSuccess": "Utente eliminato con successo",
+      "deleteFailed": "Impossibile eliminare l'utente",
+      "confirmDelete": "Sei sicuro di voler eliminare questo utente?",
+      "fetchFailed": "Impossibile recuperare gli utenti",
+      "fetchBusinessUnitsFailed": "Impossibile recuperare le unità aziendali",
+      "fetchUserBusinessUnitsFailed": "Impossibile recuperare le unità aziendali dell'utente",
+      "saveFailed": "Impossibile salvare l'utente",
+      "businessUnitAddSuccess": "Unità aziendale aggiunta con successo",
+      "businessUnitAddFailed": "Impossibile aggiungere l'unità aziendale",
+      "businessUnitRequired": "L'utente deve appartenere ad almeno un'unità aziendale",
+      "businessUnitRemoveSuccess": "Unità aziendale rimossa con successo",
+      "businessUnitRemoveFailed": "Impossibile rimuovere l'unità aziendale"
+    }
+  },
+  "businessUnits": {
+    "title": "Unità Aziendali",
+    "subtitle": "Gestisci le unità aziendali e i loro manager",
+    "addBusinessUnit": "Aggiungi Unità Aziendale",
+    "editBusinessUnit": "Modifica Unità Aziendale",
+    "deleteBusinessUnit": "Elimina Unità Aziendale",
+    "columns": {
+      "name": "Nome",
+      "description": "Descrizione",
+      "manager": "Manager",
+      "members": "Membri",
+      "actions": "Azioni"
+    },
+    "form": {
+      "name": "Nome Unità Aziendale",
+      "description": "Descrizione",
+      "manager": "Manager",
+      "selectManager": "Seleziona Manager",
+      "noManager": "Nessun Manager"
+    },
+    "messages": {
+      "createSuccess": "Unità aziendale creata con successo",
+      "createFailed": "Impossibile creare l'unità aziendale",
+      "updateSuccess": "Unità aziendale aggiornata con successo",
+      "updateFailed": "Impossibile aggiornare l'unità aziendale",
+      "deleteSuccess": "Unità aziendale eliminata con successo",
+      "deleteFailed": "Impossibile eliminare l'unità aziendale",
+      "confirmDelete": "Sei sicuro di voler eliminare questa unità aziendale?",
+      "fetchFailed": "Impossibile recuperare le unità aziendali",
+      "saveFailed": "Impossibile salvare l'unità aziendale"
+    }
+  },
+  "branding": {
+    "title": "Personalizzazione App",
+    "subtitle": "Personalizza l'aspetto della tua applicazione",
+    "appName": "Nome Applicazione",
+    "appNamePlaceholder": "Inserisci il nome dell'applicazione",
+    "primaryColor": "Colore Primario",
+    "secondaryColor": "Colore Secondario",
+    "logo": "Logo",
+    "uploadLogo": "Carica Logo",
+    "changeLogo": "Cambia Logo",
+    "removeLogo": "Rimuovi Logo",
+    "preview": "Anteprima",
+    "resetToDefault": "Ripristina Predefinito",
+    "messages": {
+      "updateSuccess": "Personalizzazione aggiornata con successo",
+      "updateFailed": "Impossibile aggiornare la personalizzazione",
+      "resetSuccess": "Personalizzazione ripristinata ai valori predefiniti",
+      "logoUploadSuccess": "Logo caricato con successo",
+      "logoUploadFailed": "Impossibile caricare il logo",
+      "fetchFailed": "Impossibile recuperare la personalizzazione",
+      "saveFailed": "Impossibile salvare la personalizzazione"
+    }
+  },
+  "microsoftSync": {
+    "title": "Sincronizzazione Microsoft 365",
+    "subtitle": "Sincronizza utenti e gruppi da Microsoft 365",
+    "tabs": {
+      "users": "Utenti",
+      "groups": "Gruppi",
+      "history": "Cronologia Sincronizzazioni"
+    },
+    "sync": {
+      "syncNow": "Sincronizza Ora",
+      "lastSync": "Ultima Sincronizzazione",
+      "never": "Mai",
+      "autoSync": "Sincronizzazione Automatica",
+      "enabled": "Abilitata",
+      "disabled": "Disabilitata",
+      "syncInterval": "Intervallo Sincronizzazione",
+      "selectInterval": "Seleziona Intervallo"
+    },
+    "users": {
+      "title": "Sincronizzazione Utenti",
+      "syncUsers": "Sincronizza Utenti",
+      "totalUsers": "Totale Utenti",
+      "syncedUsers": "Utenti Sincronizzati",
+      "pendingUsers": "In Attesa di Sincronizzazione"
+    },
+    "groups": {
+      "title": "Sincronizzazione Gruppi",
+      "syncGroups": "Sincronizza Gruppi",
+      "totalGroups": "Totale Gruppi",
+      "syncedGroups": "Gruppi Sincronizzati",
+      "mapToBusinessUnit": "Mappa a Unità Aziendale"
+    },
+    "history": {
+      "title": "Cronologia Sincronizzazioni",
+      "columns": {
+        "date": "Data",
+        "type": "Tipo",
+        "status": "Stato",
+        "itemsSynced": "Elementi Sincronizzati",
+        "duration": "Durata",
+        "details": "Dettagli"
+      },
+      "types": {
+        "users": "Utenti",
+        "groups": "Gruppi",
+        "all": "Tutti"
+      }
+    },
+    "messages": {
+      "syncStarted": "Sincronizzazione avviata",
+      "syncSuccess": "Sincronizzazione completata con successo",
+      "syncFailed": "Sincronizzazione fallita",
+      "configUpdateSuccess": "Configurazione sincronizzazione aggiornata",
+      "configUpdateFailed": "Impossibile aggiornare la configurazione di sincronizzazione",
+      "consentWindowFailed": "Impossibile aprire la finestra di consenso. Consenti i popup.",
+      "consentWindowClosed": "Finestra di consenso chiusa. Verifica stato in corso...",
+      "authWindowFailed": "Impossibile aprire la finestra di autenticazione. Consenti i popup.",
+      "tokenReceived": "Token Microsoft ricevuto",
+      "refreshingHistory": "Aggiornamento cronologia sincronizzazioni...",
+      "selectAtLeastOne": "Seleziona almeno {{item}} o usa \"Sincronizza Tutti\"",
+      "syncError": "{{name}}: {{error}}"
+    }
+  }
+}

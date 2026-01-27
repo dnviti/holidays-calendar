@@ -1,0 +1,44 @@
+{
+  "title": "Approvazione Ferie",
+  "subtitle": "Rivedi e approva le richieste di ferie del tuo team",
+  "noPendingRequests": "Nessuna richiesta in attesa al momento.",
+  "employee": "Dipendente",
+  "dateRange": "Periodo",
+  "duration": "Durata",
+  "reason": "Motivo",
+  "requestedOn": "Richiesto il",
+  "actions": "Azioni",
+  "approve": "Approva",
+  "reject": "Rifiuta",
+  "viewDetails": "Visualizza Dettagli",
+  "loading": "Caricamento...",
+  "days": "giorni",
+  "overlapWarning": "Attenzione: Sovrapposizione con {{users}}",
+  "confirmApprove": {
+    "title": "Approva Richiesta Ferie",
+    "message": "Sei sicuro di voler approvare questa richiesta di ferie per {{name}}?",
+    "confirm": "Approva",
+    "cancel": "Annulla"
+  },
+  "confirmReject": {
+    "title": "Rifiuta Richiesta Ferie",
+    "message": "Sei sicuro di voler rifiutare questa richiesta di ferie per {{name}}?",
+    "reason": "Motivo del Rifiuto (Facoltativo)",
+    "reasonPlaceholder": "Inserisci il motivo del rifiuto",
+    "confirm": "Rifiuta",
+    "cancel": "Annulla"
+  },
+  "messages": {
+    "approveSuccess": "Richiesta {{action}} con successo",
+    "approveFailed": "Impossibile {{action}} la richiesta",
+    "rejectSuccess": "Richiesta rifiutata con successo",
+    "rejectFailed": "Impossibile rifiutare la richiesta",
+    "fetchFailed": "Impossibile recuperare le approvazioni in attesa"
+  },
+  "filters": {
+    "all": "Tutte le Richieste",
+    "pending": "In Attesa",
+    "approved": "Approvate",
+    "rejected": "Rifiutate"
+  }
+}

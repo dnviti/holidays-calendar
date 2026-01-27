@@ -1,13 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import Input from './ui/Input';
-import Select from './ui/Select';
-import Button from './ui/Button';
-import { Card } from './ui/Card';
+import { useTranslation } from 'react-i18next';
+import {
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  FormControlLabel,
+  Checkbox,
+  Box,
+  Stack,
+  Grid,
+  Alert,
+  CircularProgress
+} from '@mui/material';
 import { checkOverlaps } from '../services/holidayService';
 import { toast } from 'sonner';
 
-const HolidayForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [], selectedBusinessUnit = null }) => {
+const HolidayForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [], selectedBusinessUnit = null, loading = false }) => {
+  const { t } = useTranslation('forms');
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     description: initialData?.description || '',
@@ -23,16 +36,16 @@ const HolidayForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [
   const [overlaps, setOverlaps] = useState(null);
 
   const holidayTypeOptions = [
-    { value: 'vacation', label: 'Vacation' },
-    { value: 'sick_leave', label: 'Sick Leave' },
-    { value: 'personal', label: 'Personal' },
-    { value: 'parental', label: 'Parental Leave' },
-    { value: 'other', label: 'Other' }
+    { value: 'vacation', label: t('types.vacation') },
+    { value: 'sick_leave', label: t('types.sick_leave') },
+    { value: 'personal', label: t('types.personal') },
+    { value: 'parental', label: t('types.parental') },
+    { value: 'other', label: t('types.other') }
   ];
 
   const halfDayPeriodOptions = [
-    { value: 'morning', label: 'Morning' },
-    { value: 'afternoon', label: 'Afternoon' }
+    { value: 'morning', label: t('leaveRequest.morning') },
+    { value: 'afternoon', label: t('leaveRequest.afternoon') }
   ];
 
   useEffect(() => {
@@ -74,13 +87,13 @@ const HolidayForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [
 
     // Validate dates
     if (new Date(formData.end_date) < new Date(formData.start_date)) {
-      toast.error('End date must be after or equal to start date');
+      toast.error(t('validation.endDateAfterStart'));
       return;
     }
 
     // Validate business unit
     if (!formData.business_unit_id) {
-      toast.error('Please select a business unit');
+      toast.error(t('validation.selectBusinessUnit'));
       return;
     }
 
@@ -88,132 +101,160 @@ const HolidayForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [
   };
 
   return (
-    <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Title *</label>
-          <Input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            required
-            placeholder="e.g., Summer Vacation"
-          />
-        </div>
+    <Box component="form" onSubmit={handleSubmit}>
+      <Stack spacing={3}>
+        <TextField
+          fullWidth
+          label={t('labels.title')}
+          name="title"
+          value={formData.title}
+          onChange={handleInputChange}
+          required
+          placeholder={t('placeholders.titleExample')}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows={3}
-            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            placeholder="Optional details about your leave"
-          />
-        </div>
+        <TextField
+          fullWidth
+          label={t('labels.description')}
+          name="description"
+          value={formData.description}
+          onChange={handleInputChange}
+          multiline
+          rows={3}
+          placeholder={t('placeholders.descriptionOptional')}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Business Unit *</label>
+        <FormControl fullWidth required>
+          <InputLabel>{t('labels.businessUnit')}</InputLabel>
           <Select
             name="business_unit_id"
             value={formData.business_unit_id}
             onChange={handleInputChange}
-            options={businessUnits.map(bu => ({ value: bu.id, label: bu.name }))}
-            placeholder="Select a business unit"
-            required
-          />
-        </div>
+            label={t('labels.businessUnit')}
+          >
+            {businessUnits.map(bu => (
+              <MenuItem key={bu.id} value={bu.id}>
+                {bu.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Start Date *</label>
-            <Input
-              type="date"
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label={t('labels.startDate')}
               name="start_date"
+              type="date"
               value={formData.start_date}
               onChange={handleInputChange}
               required
+              slotProps={{ inputLabel: { shrink: true } }}
             />
-          </div>
+          </Grid>
 
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">End Date *</label>
-            <Input
-              type="date"
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label={t('labels.endDate')}
               name="end_date"
+              type="date"
               value={formData.end_date}
               onChange={handleInputChange}
               required
+              slotProps={{ inputLabel: { shrink: true } }}
             />
-          </div>
-        </div>
+          </Grid>
+        </Grid>
 
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Leave Type</label>
+        <FormControl fullWidth>
+          <InputLabel>{t('leaveRequest.leaveType')}</InputLabel>
           <Select
             name="holiday_type"
             value={formData.holiday_type}
             onChange={handleInputChange}
-            options={holidayTypeOptions}
-          />
-        </div>
+            label={t('leaveRequest.leaveType')}
+          >
+            {holidayTypeOptions.map(option => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="is_half_day"
-            name="is_half_day"
-            checked={formData.is_half_day}
-            onChange={handleInputChange}
-            className="mr-2"
-          />
-          <label htmlFor="is_half_day" className="text-sm font-medium text-text-secondary">Half Day</label>
-        </div>
+        <FormControlLabel
+          control={
+            <Checkbox
+              name="is_half_day"
+              checked={formData.is_half_day}
+              onChange={handleInputChange}
+            />
+          }
+          label={t('leaveRequest.halfDay')}
+        />
 
         {formData.is_half_day && (
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Half Day Period</label>
+          <FormControl fullWidth>
+            <InputLabel>{t('leaveRequest.halfDayPeriod')}</InputLabel>
             <Select
               name="half_day_period"
               value={formData.half_day_period}
               onChange={handleInputChange}
-              options={halfDayPeriodOptions}
-            />
-          </div>
+              label={t('leaveRequest.halfDayPeriod')}
+            >
+              {halfDayPeriodOptions.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         )}
 
         {checkingOverlaps && (
-          <div className="p-3 bg-blue-50 text-blue-700 rounded-md text-sm">
-            Checking for overlapping holidays...
-          </div>
+          <Alert severity="info" icon={<CircularProgress size={20} />}>
+            {t('overlapCheck.checking')}
+          </Alert>
         )}
 
         {overlaps?.has_overlaps && (
-          <div className="p-3 bg-amber-50 text-amber-700 rounded-md text-sm">
-            <p className="font-medium mb-1">⚠️ Overlap Warning</p>
-            <p className="mb-2">The following team members are also off during this period:</p>
-            <ul className="list-disc list-inside">
-              {overlaps.overlapping_holidays.map((h) => (
-                <li key={h.id}>
-                  {h.user_name}: {format(new Date(h.start_date), 'MMM dd')} - {format(new Date(h.end_date), 'MMM dd')}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <Alert severity="warning">
+            <Box>
+              <strong>⚠️ {t('overlapCheck.warningTitle')}</strong>
+              <Box mt={1}>{t('overlapCheck.warningMessage')}</Box>
+              <Box component="ul" sx={{ mt: 1, pl: 2 }}>
+                {overlaps.overlapping_holidays.map((h) => (
+                  <li key={h.id}>
+                    {h.user_name}: {format(new Date(h.start_date), 'MMM dd')} - {format(new Date(h.end_date), 'MMM dd')}
+                  </li>
+                ))}
+              </Box>
+            </Box>
+          </Alert>
         )}
 
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancel
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pt: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            {t('leaveRequest.cancel')}
           </Button>
-          <Button type="submit" variant="primary">
-            {initialData ? 'Update Request' : 'Submit Request'}
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : (initialData ? t('leaveRequest.update') : t('leaveRequest.submit'))}
           </Button>
-        </div>
-      </form>
-    </Card>
+        </Box>
+      </Stack>
+    </Box>
   );
 };
 

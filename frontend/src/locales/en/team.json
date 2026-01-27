@@ -1,0 +1,21 @@
+{
+  "title": "My Team",
+  "subtitle": "View your team members and their availability",
+  "noTeamMembers": "You don't have any team members yet.",
+  "member": "Team Member",
+  "availability": "Availability",
+  "status": "Status",
+  "onLeave": "On Leave",
+  "available": "Available",
+  "until": "Until",
+  "viewCalendar": "View Calendar",
+  "loading": "Loading...",
+  "messages": {
+    "fetchFailed": "Failed to fetch team members"
+  },
+  "filters": {
+    "all": "All Members",
+    "available": "Available",
+    "onLeave": "On Leave"
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { toast } from 'sonner';
 import {
@@ -17,6 +18,7 @@ import {
 import { Check, Clear } from '@mui/icons-material';
 
 const Approvals = () => {
+  const { t } = useTranslation('approvals');
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +32,7 @@ const Approvals = () => {
       setPendingRequests(response.data);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to fetch pending approvals');
+      toast.error(t('messages.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -44,18 +46,18 @@ const Approvals = () => {
 
       await api.post(endpoint, {}, { params: { notes } });
 
-      toast.success(`Request ${action}d successfully`);
+      toast.success(t('messages.approveSuccess', { action }));
       fetchPendingRequests();
     } catch (error) {
       console.error(error);
-      toast.error(`Failed to ${action} request`);
+      toast.error(t('messages.approveFailed', { action }));
     }
   };
 
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-        <Typography>Loading...</Typography>
+        <Typography>{t('loading')}</Typography>
       </Box>
     );
   }
@@ -63,12 +65,12 @@ const Approvals = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Leave Approvals
+        {t('title')}
       </Typography>
 
       {pendingRequests.length === 0 ? (
         <MuiCard sx={{ p: 4, textAlign: 'center' }}>
-          <Alert severity="info">No pending requests at the moment.</Alert>
+          <Alert severity="info">{t('noPendingRequests')}</Alert>
         </MuiCard>
       ) : (
         <Grid container spacing={2}>
@@ -92,7 +94,7 @@ const Approvals = () => {
                           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                             {new Date(request.start_date).toLocaleDateString()} - {new Date(request.end_date).toLocaleDateString()}
                             <Chip
-                              label={`${request.duration_days} days`}
+                              label={`${request.duration_days} ${t('days')}`}
                               size="small"
                               sx={{ ml: 1, verticalAlign: 'middle' }}
                             />
@@ -104,7 +106,7 @@ const Approvals = () => {
                               severity="warning"
                               sx={{ mt: 1, alignItems: 'center' }}
                             >
-                              ⚠ Warning: Overlaps with {request.overlapping_users.join(', ')}
+                              ⚠ {t('overlapWarning', { users: request.overlapping_users.join(', ') })}
                             </Alert>
                           )}
                         </Box>
@@ -120,7 +122,7 @@ const Approvals = () => {
                           onClick={() => handleAction(request.id, 'reject')}
                           sx={{ minWidth: 120 }}
                         >
-                          Reject
+                          {t('reject')}
                         </Button>
                         <Button
                           variant="contained"
@@ -129,7 +131,7 @@ const Approvals = () => {
                           onClick={() => handleAction(request.id, 'approve')}
                           sx={{ minWidth: 120 }}
                         >
-                          Approve
+                          {t('approve')}
                         </Button>
                       </Stack>
                     </Grid>

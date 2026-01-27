@@ -1,0 +1,37 @@
+{
+  "generic": {
+    "somethingWrong": "Something went wrong",
+    "tryAgain": "Please try again",
+    "contactSupport": "If the problem persists, please contact support",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Access forbidden",
+    "serverError": "Server error"
+  },
+  "network": {
+    "offline": "You are offline",
+    "timeout": "Request timeout",
+    "connectionLost": "Connection lost",
+    "checkConnection": "Please check your internet connection"
+  },
+  "validation": {
+    "invalidInput": "Invalid input",
+    "requiredFields": "Please fill in all required fields",
+    "invalidFormat": "Invalid format",
+    "valueTooLow": "Value is too low",
+    "valueTooHigh": "Value is too high"
+  },
+  "api": {
+    "loadFailed": "Failed to load data",
+    "saveFailed": "Failed to save data",
+    "deleteFailed": "Failed to delete",
+    "updateFailed": "Failed to update",
+    "createFailed": "Failed to create"
+  },
+  "auth": {
+    "sessionExpired": "Your session has expired",
+    "loginRequired": "Please log in to continue",
+    "invalidCredentials": "Invalid credentials",
+    "accessDenied": "Access denied"
+  }
+}

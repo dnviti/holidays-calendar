@@ -1,0 +1,38 @@
+{
+  "welcome": "Welcome back, {{name}}",
+  "welcomeDefault": "Welcome back",
+  "subtitle": "Here is your holiday overview",
+  "stats": {
+    "pendingRequests": "Pending Requests",
+    "approvedThisYear": "Approved (This Year)",
+    "totalHolidays": "Total Holidays"
+  },
+  "requestLeave": {
+    "button": "Request Leave",
+    "title": "Request Leave",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g. Summer Vacation",
+    "startDateLabel": "Start Date",
+    "endDateLabel": "End Date",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Optional",
+    "submitButton": "Submit Request",
+    "success": "Holiday request submitted!",
+    "error": "Failed to submit request"
+  },
+  "messages": {
+    "holidayUpdated": "Holiday updated",
+    "holidayUpdateFailed": "Failed to update holiday"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "viewAll": "View All"
+  },
+  "upcomingLeave": {
+    "title": "Upcoming Leave",
+    "noUpcoming": "No upcoming leave",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "inDays": "In {{count}} days"
+  }
+}

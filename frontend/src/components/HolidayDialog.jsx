@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogTitle,
@@ -28,6 +29,7 @@ import HolidayForm from './HolidayForm';
 import { useAuth } from '../contexts/AuthContext';
 
 const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, onReject, onRequestChange, businessUnits = [] }) => {
+  const { t } = useTranslation('forms');
   const { user } = useAuth();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showManagerNotes, setShowManagerNotes] = useState(false);
@@ -51,11 +53,11 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
 
   const getStatusChip = (status) => {
     const statusConfig = {
-      pending: { color: 'warning', icon: <Warning sx={{ fontSize: 16 }} />, label: 'Pending Approval' },
-      approved: { color: 'success', icon: <CheckCircle sx={{ fontSize: 16 }} />, label: 'Approved' },
-      rejected: { color: 'error', icon: <Cancel sx={{ fontSize: 16 }} />, label: 'Rejected' },
-      change_requested: { color: 'warning', icon: <Warning sx={{ fontSize: 16 }} />, label: 'Change Requested' },
-      cancelled: { color: 'default', icon: <Cancel sx={{ fontSize: 16 }} />, label: 'Cancelled' }
+      pending: { color: 'warning', icon: <Warning sx={{ fontSize: 16 }} />, label: t('status.pending') },
+      approved: { color: 'success', icon: <CheckCircle sx={{ fontSize: 16 }} />, label: t('status.approved') },
+      rejected: { color: 'error', icon: <Cancel sx={{ fontSize: 16 }} />, label: t('status.rejected') },
+      change_requested: { color: 'warning', icon: <Warning sx={{ fontSize: 16 }} />, label: t('status.changeRequested') },
+      cancelled: { color: 'default', icon: <Cancel sx={{ fontSize: 16 }} />, label: t('status.cancelled') }
     };
     const config = statusConfig[status] || statusConfig.pending;
     return (
@@ -71,11 +73,11 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
 
   const getHolidayTypeLabel = (type) => {
     const types = {
-      vacation: 'Vacation',
-      sick_leave: 'Sick Leave',
-      personal: 'Personal',
-      parental: 'Parental Leave',
-      other: 'Other'
+      vacation: t('types.vacation'),
+      sick_leave: t('types.sick_leave'),
+      personal: t('types.personal'),
+      parental: t('types.parental'),
+      other: t('types.other')
     };
     return types[type] || type;
   };
@@ -97,7 +99,7 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
   };
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to cancel this leave request?')) {
+    if (window.confirm(t('confirmations.deleteLeaveRequest'))) {
       if (onDelete && event.id) {
         onDelete(event.id);
         onClose();
@@ -109,7 +111,7 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
     setActionType(action);
     if (action === 'approve') {
       // For approve, notes are optional
-      if (window.confirm('Are you sure you want to approve this leave request?')) {
+      if (window.confirm(t('confirmations.approveLeaveRequest'))) {
         if (onApprove) {
           onApprove(event.id, null);
           onClose();
@@ -123,7 +125,7 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
 
   const handleSubmitManagerAction = () => {
     if (!managerNotes && actionType !== 'approve') {
-      alert('Please provide notes for this action');
+      alert(t('confirmations.provideNotes'));
       return;
     }
 
@@ -174,7 +176,7 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
               </Avatar>
               <Box>
                 <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-                  {extendedProps?.userName || 'Team Member'}
+                  {extendedProps?.userName || t('dialog.teamMember')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {getHolidayTypeLabel(extendedProps?.holidayType)}
@@ -208,7 +210,7 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
                 <Typography variant="body1">{getDateRange()}</Typography>
                 {extendedProps?.is_half_day && (
                   <Chip
-                    label={`Half Day (${extendedProps.half_day_period})`}
+                    label={`${t('dialog.halfDay')} (${extendedProps.half_day_period === 'morning' ? t('leaveRequest.morning') : t('leaveRequest.afternoon')})`}
                     size="small"
                     color="info"
                     sx={{ ml: 1 }}
@@ -235,10 +237,10 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
               {extendedProps?.has_overlap && (
                 <Alert severity="warning" icon={<Warning />}>
                   <Typography variant="body2" fontWeight={500}>
-                    Team Overlap
+                    {t('dialog.teamOverlap')}
                   </Typography>
                   <Typography variant="caption">
-                    Other team members are also off during this period
+                    {t('dialog.teamOverlapMessage')}
                   </Typography>
                 </Alert>
               )}
@@ -246,7 +248,7 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
               {extendedProps?.manager_notes && (
                 <Alert severity="info">
                   <Typography variant="body2" fontWeight={500} gutterBottom>
-                    Manager Notes:
+                    {t('dialog.managerNotes')}
                   </Typography>
                   <Typography variant="body2">
                     {extendedProps.manager_notes}
@@ -257,14 +259,14 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField
-                label={actionType === 'reject' ? 'Rejection Reason *' : 'Change Request Notes *'}
+                label={actionType === 'reject' ? t('dialog.rejectionReason') : t('dialog.changeRequestNotes')}
                 value={managerNotes}
                 onChange={(e) => setManagerNotes(e.target.value)}
                 multiline
                 rows={4}
                 fullWidth
                 required
-                placeholder="Provide feedback to the employee..."
+                placeholder={t('dialog.provideFeedback')}
                 variant="outlined"
               />
             </Box>
@@ -284,7 +286,7 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
                     onClick={handleEdit}
                     size="small"
                   >
-                    Edit
+                    {t('dialog.edit')}
                   </Button>
                 )}
                 {canDelete && (
@@ -295,7 +297,7 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
                     onClick={handleDelete}
                     size="small"
                   >
-                    Cancel Request
+                    {t('dialog.cancelRequest')}
                   </Button>
                 )}
               </Box>
@@ -308,13 +310,13 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
                     startIcon={<CheckCircle />}
                     onClick={() => handleManagerAction('approve')}
                   >
-                    Approve
+                    {t('dialog.approve')}
                   </Button>
                   <Button
                     variant="outlined"
                     onClick={() => handleManagerAction('request_change')}
                   >
-                    Request Change
+                    {t('dialog.requestChange')}
                   </Button>
                   <Button
                     variant="outlined"
@@ -322,13 +324,13 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
                     startIcon={<Cancel />}
                     onClick={() => handleManagerAction('reject')}
                   >
-                    Reject
+                    {t('dialog.reject')}
                   </Button>
                 </Box>
               ) : (
                 !canEdit && !canDelete && (
                   <Button variant="outlined" onClick={onClose}>
-                    Close
+                    {t('dialog.close')}
                   </Button>
                 )
               )}
@@ -343,13 +345,13 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
                   setActionType(null);
                 }}
               >
-                Cancel
+                {t('leaveRequest.cancel')}
               </Button>
               <Button
                 variant="contained"
                 onClick={handleSubmitManagerAction}
               >
-                Submit
+                {t('dialog.submit')}
               </Button>
             </>
           )}
@@ -363,13 +365,15 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
           onClose={() => setShowEditDialog(false)}
           maxWidth="sm"
           fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: 2
+          slotProps={{
+            paper: {
+              sx: {
+                borderRadius: 2
+              }
             }
           }}
         >
-          <DialogTitle sx={{ fontWeight: 600 }}>Edit Leave Request</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 600 }}>{t('leaveRequest.editTitle')}</DialogTitle>
           <Divider />
           <DialogContent sx={{ pt: 3 }}>
             <HolidayForm
