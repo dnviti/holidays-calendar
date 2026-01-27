@@ -8,7 +8,9 @@ COPY frontend/package*.json ./
 RUN npm ci
 
 COPY frontend/ .
-RUN npm run build
+
+# Override the vite output directory for Docker build
+RUN npm run build -- --outDir=dist
 
 
 # Run Stage for Backend
@@ -30,7 +32,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 
 # Copy frontend build artifacts
-COPY --from=frontend-build /app/backend/static/dist /app/static/dist
+COPY --from=frontend-build /app/frontend/dist /app/static/dist
 
 # Create uploads directory
 RUN mkdir -p uploads/branding
