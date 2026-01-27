@@ -9,7 +9,7 @@ from pathlib import Path
 
 from app.core.config import settings
 from app.core.database import create_db_and_tables
-from app.api import auth, users, business_units, holidays, events, branding
+from app.api import auth, users, business_units, holidays, events, branding, sync
 
 
 @asynccontextmanager
@@ -40,17 +40,16 @@ async def create_default_admin():
     from app.core.database import engine
     from app.models.user import User, UserRole
     from app.core.security import get_password_hash
-    import os
-    
+
     with Session(engine) as session:
         # Check if any users exist
         existing = session.exec(select(User)).first()
         if existing:
             return
-        
+
         # Create default admin
-        admin_email = os.getenv("ADMIN_EMAIL", "admin@example.com")
-        admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+        admin_email = settings.admin_email
+        admin_password = settings.admin_password
         
         admin = User(
             email=admin_email,
@@ -96,6 +95,7 @@ app.include_router(business_units.router, prefix="/api")
 app.include_router(holidays.router, prefix="/api")
 app.include_router(events.router, prefix="/api")
 app.include_router(branding.router, prefix="/api")
+app.include_router(sync.router, prefix="/api")
 
 
 # Mount static files (React build)

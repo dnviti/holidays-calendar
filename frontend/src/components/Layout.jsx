@@ -10,7 +10,8 @@ import {
   Building2,
   Briefcase,
   Menu,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
 import {
   Drawer,
@@ -53,6 +54,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const adminItems = [
     { to: '/admin/users', icon: <Users size={20} />, text: 'Users' },
     { to: '/admin/business-units', icon: <Building2 size={20} />, text: 'Business Units' },
+    { to: '/admin/microsoft-sync', icon: <RefreshCw size={20} />, text: 'Microsoft Sync' },
     { to: '/admin/branding', icon: <Settings size={20} />, text: 'Branding' },
   ];
 

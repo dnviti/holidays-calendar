@@ -39,4 +39,4 @@ RUN mkdir -p uploads/branding
 
 # Command to run the application
 # Use shell script to run migrations before start in production
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host ${HOST:-0.0.0.0} --port ${PORT:-8000}"]

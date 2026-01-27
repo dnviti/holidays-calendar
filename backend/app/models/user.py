@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .business_unit import BusinessUnit
     from .holiday import Holiday
     from .event import Event
+    from .sync import SyncLog
 
 
 class UserRole(str, Enum):
@@ -62,7 +63,10 @@ class User(UserBase, table=True):
     managed_units: List["BusinessUnit"] = Relationship(
         sa_relationship=relationship("BusinessUnit", back_populates="manager")
     )
-    
+    sync_logs: List["SyncLog"] = Relationship(
+        sa_relationship=relationship("SyncLog", back_populates="initiated_by")
+    )
+
     def is_admin(self) -> bool:
         """Check if user is an admin."""
         return self.role == UserRole.ADMIN

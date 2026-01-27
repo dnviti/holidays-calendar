@@ -144,21 +144,52 @@ async def get_optional_user(
     """Get current user if authenticated, otherwise None."""
     if credentials is None:
         return None
-    
+
     try:
         token = credentials.credentials
         payload = decode_token(token)
-        
+
         if payload is None:
             return None
-        
+
         user_id = payload.get("sub")
         if user_id is None:
             return None
-        
+
         user = session.get(User, UUID(user_id))
         if user and user.is_active:
             return user
         return None
     except Exception:
         return None
+
+
+async def get_microsoft_admin_user(
+    current_user: User = Depends(get_admin_user)
+) -> User:
+    """Require both local admin and Microsoft authentication.
+
+    This dependency ensures:
+    1. User has local admin role (UserRole.ADMIN)
+    2. User is authenticated via Microsoft (has microsoft_id)
+
+    Note: Microsoft admin privileges must be verified separately
+    when performing sync operations using the Microsoft access token.
+
+    Args:
+        current_user: Current authenticated admin user
+
+    Returns:
+        The admin user with Microsoft authentication
+
+    Raises:
+        HTTPException: If user doesn't have Microsoft authentication
+    """
+    if not current_user.microsoft_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Microsoft authentication required for sync operations. "
+                   "Please log in using your Microsoft account.",
+        )
+
+    return current_user

@@ -33,9 +33,12 @@ class BusinessUnitBase(SQLModel):
 class BusinessUnit(BusinessUnitBase, table=True):
     """Business Unit model."""
     __tablename__ = "businessunit"
-    
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     manager_id: Optional[UUID] = Field(default=None, foreign_key="user.id")
+
+    # Microsoft 365 integration
+    microsoft_group_id: Optional[str] = Field(default=None, unique=True, index=True, max_length=255)
     
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)

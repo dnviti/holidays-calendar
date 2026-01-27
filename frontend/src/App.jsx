@@ -17,6 +17,7 @@ import CalendarPage from './pages/CalendarPage';
 import AdminBranding from './pages/admin/Branding';
 import BusinessUnits from './pages/admin/BusinessUnits';
 import Users from './pages/admin/Users';
+import MicrosoftSync from './pages/admin/MicrosoftSync';
 import Approvals from './pages/Approvals';
 import Team from './pages/Team';
 
@@ -70,6 +71,7 @@ function App() {
         <Route path="admin/branding" element={<AdminBranding />} future={future}/>
         <Route path="admin/business-units" element={<BusinessUnits />} future={future}/>
         <Route path="admin/users" element={<Users />} future={future}/>
+        <Route path="admin/microsoft-sync" element={<MicrosoftSync />} future={future}/>
         <Route path="approvals" element={<Approvals />} future={future}/>
         <Route path="team" element={<Team />} future={future}/>
       </Route>
