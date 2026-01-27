@@ -451,3 +451,185 @@ body {
   height: 100%;
   overflow: auto;
 }
+
+/* ===============================================
+   DARK THEME STYLES
+   =============================================== */
+
+/* Dark Theme Scrollbar Styling */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #0F172A;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Dark Theme FullCalendar Overrides */
+[data-theme="dark"] .fc {
+  --fc-page-bg-color: #1E293B;
+  --fc-neutral-bg-color: #0F172A;
+  --fc-border-color: #334155;
+  --fc-today-bg-color: #1E3A5F;
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .fc .fc-view-harness {
+  background-color: #1E293B;
+}
+
+[data-theme="dark"] .fc .fc-col-header {
+  background-color: #1E293B;
+  border-bottom: 1px solid #334155;
+}
+
+[data-theme="dark"] .fc .fc-col-header-cell {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .fc .fc-daygrid-day {
+  background-color: #1E293B;
+  border: 1px solid #334155;
+}
+
+[data-theme="dark"] .fc .fc-daygrid-day:hover {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .fc .fc-daygrid-day-number {
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .fc .fc-day-today {
+  background-color: #1E3A5F !important;
+}
+
+[data-theme="dark"] .fc .fc-day-today .fc-daygrid-day-number {
+  background-color: #3B82F6;
+  color: white;
+}
+
+[data-theme="dark"] .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+  color: #475569;
+}
+
+[data-theme="dark"] .fc .fc-day-sat,
+[data-theme="dark"] .fc .fc-day-sun {
+  background-color: #0F172A;
+}
+
+[data-theme="dark"] .fc-event {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .fc-event:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .fc .fc-daygrid-more-link {
+  color: #60A5FA;
+}
+
+[data-theme="dark"] .fc .fc-daygrid-more-link:hover {
+  background-color: #1E3A5F;
+}
+
+[data-theme="dark"] .fc-popover {
+  background-color: #1E293B;
+  border: 1px solid #334155;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .fc-popover-header {
+  background-color: #1E293B;
+  border-bottom: 1px solid #334155;
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .fc-popover-body {
+  background-color: #1E293B;
+}
+
+[data-theme="dark"] .fc .fc-timegrid-slot {
+  border-bottom: 1px solid #334155;
+}
+
+[data-theme="dark"] .fc .fc-timegrid-slot-label {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .fc .fc-timegrid-divider {
+  border-color: #334155;
+}
+
+[data-theme="dark"] .fc .fc-list-event {
+  background-color: #1E293B;
+}
+
+[data-theme="dark"] .fc .fc-list-event:hover {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .fc .fc-list-event-time {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .fc .fc-list-event-title {
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .fc .fc-list-day-cushion {
+  background-color: #0F172A;
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .fc-scroller::-webkit-scrollbar-track {
+  background: #1E293B;
+}
+
+[data-theme="dark"] .fc-scroller::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+[data-theme="dark"] .fc-scroller::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+[data-theme="dark"] .fc-highlight {
+  background-color: #1E3A5F !important;
+}
+
+[data-theme="dark"] .fc .fc-timegrid-now-indicator-line {
+  border-color: #F87171;
+}
+
+[data-theme="dark"] .fc .fc-timegrid-now-indicator-arrow {
+  border-color: #F87171;
+}
+
+/* Dark theme for toolbar buttons */
+[data-theme="dark"] .fc .fc-button {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+[data-theme="dark"] .fc .fc-button:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+[data-theme="dark"] .fc .fc-button:disabled {
+  background-color: #334155;
+  border-color: #334155;
+  color: #64748B;
+}
+
+[data-theme="dark"] .fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import LanguageSelector from './LanguageSelector';
+import ThemeToggle from './ThemeToggle';
 import {
   Calendar,
   LogOut,
@@ -224,6 +225,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <LanguageSelector />
+          <ThemeToggle />
         </Box>
         <Button
           onClick={logout}
@@ -266,6 +268,7 @@ const Layout = () => {
               <Typography variant="h6" noWrap component="div" sx={{ color: 'text.primary', flexGrow: 1 }}>
                 {window.location.pathname.split('/').pop() || 'Dashboard'}
               </Typography>
+              <ThemeToggle />
               <LanguageSelector />
             </Toolbar>
           </AppBar>

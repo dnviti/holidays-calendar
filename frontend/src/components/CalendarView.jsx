@@ -7,7 +7,7 @@ import listPlugin from '@fullcalendar/list';
 import CalendarHeader from './CalendarHeader';
 import HolidayDialog from './HolidayDialog';
 import HolidayCreationDialog from './HolidayCreationDialog';
-import { Menu, MenuItem, Box, Paper } from '@mui/material';
+import { Menu, MenuItem, Box, Paper, useTheme } from '@mui/material';
 
 const CalendarView = ({
   events,
@@ -24,6 +24,7 @@ const CalendarView = ({
   businessUnits = [],
   showEventCreation = false
 }) => {
+  const theme = useTheme();
   const calendarRef = useRef(null);
   const [view, setView] = useState('dayGridMonth');
   const [title, setTitle] = useState('');
@@ -312,10 +313,10 @@ const CalendarView = ({
               const isRejected = status === 'rejected';
               const isChangeRequested = status === 'change_requested';
 
-              // Determine border color based on status
+              // Determine border color based on status using theme colors
               let borderColor = '';
-              if (isPending) borderColor = '#F59E0B'; // Amber for pending
-              else if (isRejected) borderColor = '#EF4444'; // Red for rejected
+              if (isPending) borderColor = theme.palette.warning.main; // Amber for pending
+              else if (isRejected) borderColor = theme.palette.error.main; // Red for rejected
               else if (isChangeRequested) borderColor = '#F97316'; // Orange for change requested
 
               return (
