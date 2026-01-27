@@ -13,9 +13,9 @@ const EventForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [] 
     end_date: initialData?.end_date || format(new Date(), 'yyyy-MM-dd'),
     start_time: initialData?.start_time || '09:00',
     end_time: initialData?.end_time || '17:00',
-    event_type: initialData?.event_type || 'holiday',
+    event_type: initialData?.event_type || 'other',
     visibility: initialData?.visibility || 'private',
-    is_all_day: initialData?.is_all_day || true, // Holidays are typically all-day by default
+    is_all_day: initialData?.is_all_day !== undefined ? initialData.is_all_day : true,
     location: initialData?.location || '',
     color: initialData?.color || '#3B82F6',
     business_unit_id: initialData?.business_unit_id || ''

@@ -5,18 +5,22 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import CalendarHeader from './CalendarHeader';
-import EventDialog from './EventDialog';
-import EventCreationDialog from './EventCreationDialog';
-import { Menu } from '@mui/material';
+import HolidayDialog from './HolidayDialog';
+import HolidayCreationDialog from './HolidayCreationDialog';
+import { Menu, MenuItem, Box, Paper } from '@mui/material';
 
 const CalendarView = ({
   events,
   onDateSelect,
   onEventDrop,
   businessUnitName,
+  selectedBusinessUnit,
   onCreateEvent,
   onUpdateEvent,
   onDeleteEvent,
+  onApproveEvent,
+  onRejectEvent,
+  onRequestChange,
   businessUnits = [],
   showEventCreation = false
 }) => {
@@ -249,7 +253,7 @@ const CalendarView = ({
   }, []);
 
   return (
-    <div className="h-full flex flex-col">
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <CalendarHeader
         title={title}
         view={view}
@@ -259,18 +263,25 @@ const CalendarView = ({
         onToday={handleToday}
       />
 
-      <div className="flex-1 card p-0 overflow-hidden border border-border">
-        {/* FullCalendar wrapper to enforce consistent styling via index.css */}
-        <div className="h-full fc-theme-standard">
+      <Paper
+        elevation={1}
+        sx={{
+          flex: 1,
+          overflow: 'hidden',
+          borderRadius: 2,
+          p: 0
+        }}
+      >
+        <Box sx={{ height: '100%', '& .fc': { height: '100%' } }}>
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
             headerToolbar={false}
             initialView="dayGridMonth"
-            editable={true} // Enable dragging and resizing
+            editable={true}
             selectable={true}
             selectMirror={true}
-            dayMaxEvents={true}
+            dayMaxEvents={3}
             weekends={true}
             events={events}
             select={handleDateSelect}
@@ -279,12 +290,16 @@ const CalendarView = ({
             eventDrop={onEventDrop}
             eventResize={handleEventResize}
             selectAllow={(selectInfo) => {
-              // Allow selection for creating events
               return true;
             }}
             nowIndicator={true}
             height="100%"
+            contentHeight="auto"
+            aspectRatio={1.8}
             datesSet={(arg) => setTitle(arg.view.title)}
+            firstDay={1}
+            fixedWeekCount={false}
+            showNonCurrentDates={true}
             eventContent={(eventInfo) => {
               // Apply business unit color if available
               const eventColor = eventInfo.event.backgroundColor || eventInfo.event.extendedProps.color;
@@ -304,18 +319,25 @@ const CalendarView = ({
               else if (isChangeRequested) borderColor = '#F97316'; // Orange for change requested
 
               return (
-                <div
-                  className="flex items-center gap-1 px-1 w-full overflow-hidden text-xs"
-                  style={{
-                    backgroundColor: eventColor ? `${eventColor}20` : undefined, // Add transparency
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: 1,
+                    width: '100%',
+                    overflow: 'hidden',
+                    fontSize: '0.75rem',
+                    backgroundColor: eventColor ? `${eventColor}20` : undefined,
                     borderLeft: borderColor ? `3px solid ${borderColor}` : 'none',
                     fontWeight: isPending ? 'bold' : 'normal',
-                    opacity: isRejected ? 0.6 : 1 // Reduce opacity for rejected events
+                    opacity: isRejected ? 0.6 : 1
                   }}
                 >
                   {(isPending || isRejected || isChangeRequested) && (
-                    <span
-                      className="text-xs"
+                    <Box
+                      component="span"
+                      sx={{ fontSize: '0.75rem' }}
                       title={
                         isPending ? "Pending approval" :
                         isRejected ? "Rejected" :
@@ -325,12 +347,21 @@ const CalendarView = ({
                       {isPending && '⏳'}
                       {isRejected && '❌'}
                       {isChangeRequested && '📝'}
-                    </span>
+                    </Box>
                   )}
-                  <span className="truncate font-medium text-white">
+                  <Box
+                    component="span"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      fontWeight: 500,
+                      color: 'white'
+                    }}
+                  >
                     {eventInfo.event.title}
-                  </span>
-                </div>
+                  </Box>
+                </Box>
               );
             }}
             eventDidMount={(info) => {
@@ -344,8 +375,8 @@ const CalendarView = ({
               });
             }}
           />
-        </div>
-      </div>
+        </Box>
+      </Paper>
 
       {/* Context Menu */}
       <Menu
@@ -358,58 +389,46 @@ const CalendarView = ({
         onContextMenu={(e) => e.preventDefault()} // Prevent context menu from reopening
       >
         {contextMenu.event ? (
-          // Context menu for existing event
-          <div className="py-1">
-            <div
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleContextMenuAction('edit')}
-            >
-              Edit Event
-            </div>
-            <div
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleContextMenuAction('delete')}
-            >
-              Delete Event
-            </div>
-            <div
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleContextMenuAction('duplicate')}
-            >
-              Duplicate Event
-            </div>
-          </div>
+          // Context menu for existing leave request
+          <>
+            <MenuItem onClick={() => handleContextMenuAction('edit')}>
+              View Details
+            </MenuItem>
+            <MenuItem onClick={() => handleContextMenuAction('delete')}>
+              Cancel Request
+            </MenuItem>
+          </>
         ) : (
-          // Context menu for date (create new event)
-          <div className="py-1">
-            <div
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleContextMenuAction('create')}
-            >
-              Create Event
-            </div>
-          </div>
+          // Context menu for date (create new leave request)
+          <MenuItem onClick={() => handleContextMenuAction('create')}>
+            Create Leave Request
+          </MenuItem>
         )}
       </Menu>
 
-      <EventDialog
+      <HolidayDialog
         open={!!selectedEvent}
         event={selectedEvent}
         onClose={() => setSelectedEvent(null)}
         onUpdate={handleUpdateEventSuccess}
         onDelete={onDeleteEvent}
+        onApprove={onApproveEvent}
+        onReject={onRejectEvent}
+        onRequestChange={onRequestChange}
+        businessUnits={businessUnits}
       />
 
       {showEventCreation && (
-        <EventCreationDialog
+        <HolidayCreationDialog
           open={showCreateDialog}
           onClose={() => setShowCreateDialog(false)}
           onSuccess={handleCreateEventSuccess}
           selectedDate={selectedDate}
           businessUnits={businessUnits}
+          selectedBusinessUnit={selectedBusinessUnit}
         />
       )}
-    </div>
+    </Box>
   );
 };
 

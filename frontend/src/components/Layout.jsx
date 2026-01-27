@@ -262,10 +262,15 @@ const Layout = () => {
           </AppBar>
         )}
 
-        <Toolbar /> {/* Spacer for fixed AppBar */}
+        {isMobile && <Toolbar />} {/* Spacer for fixed AppBar on mobile */}
 
         {/* Main Content */}
-        <Box sx={{ p: 3, pt: isMobile ? 2 : 3 }}>
+        <Box sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0
+        }}>
           <Outlet />
         </Box>
       </Box>

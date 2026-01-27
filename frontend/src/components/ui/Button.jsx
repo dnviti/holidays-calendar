@@ -9,6 +9,7 @@ const Button = React.forwardRef(({
   isLoading,
   children,
   disabled,
+  startIcon,
   ...props
 }, ref) => {
   return (
@@ -23,7 +24,8 @@ const Button = React.forwardRef(({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+      {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+      {startIcon && <span className="inline-flex mr-2">{startIcon}</span>}
       {children}
     </button>
   );

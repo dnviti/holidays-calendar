@@ -1,79 +1,142 @@
 import React from 'react';
-import Button from './ui/Button';
-import { ChevronLeft, ChevronRight, Calendar, List, Grid3X3, Grid } from 'lucide-react';
-import clsx from 'clsx';
+import {
+  Box,
+  Typography,
+  IconButton,
+  Button,
+  ToggleButtonGroup,
+  ToggleButton,
+  Paper,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
+import {
+  ChevronLeft,
+  ChevronRight,
+  CalendarMonth,
+  ViewWeek,
+  ViewDay,
+  List
+} from '@mui/icons-material';
 
 const CalendarHeader = ({ title, view, onViewChange, onPrev, onNext, onToday }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4 p-4 card bg-card">
-      <div className="flex items-center gap-4 w-full md:w-auto">
-        <Button variant="secondary" size="sm" onClick={onToday} className="hidden md:flex">
+    <Paper
+      elevation={1}
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 2,
+        mb: 2,
+        p: 2,
+        borderRadius: 2
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          width: { xs: '100%', md: 'auto' }
+        }}
+      >
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={onToday}
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            borderRadius: 1,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
           Today
         </Button>
 
-        <div className="flex items-center gap-1">
-          <button
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <IconButton
             onClick={onPrev}
-            className="p-1 rounded hover:bg-surface text-text-secondary hover:text-primary transition-colors"
+            size="small"
+            sx={{
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'primary.main',
+                bgcolor: 'action.hover'
+              }
+            }}
           >
-            <ChevronLeft size={20} />
-          </button>
-          <button
+            <ChevronLeft />
+          </IconButton>
+          <IconButton
             onClick={onNext}
-            className="p-1 rounded hover:bg-surface text-text-secondary hover:text-primary transition-colors"
+            size="small"
+            sx={{
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'primary.main',
+                bgcolor: 'action.hover'
+              }
+            }}
           >
-            <ChevronRight size={20} />
-          </button>
-        </div>
+            <ChevronRight />
+          </IconButton>
+        </Box>
 
-        <h2 className="text-xl font-bold truncate">
+        <Typography
+          variant="h6"
+          component="h2"
+          sx={{
+            fontWeight: 600,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+        >
           {title}
-        </h2>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="flex p-1 bg-surface rounded-lg border border-border w-full md:w-auto">
-        <ViewOption
-          active={view === 'dayGridMonth'}
-          onClick={() => onViewChange('dayGridMonth')}
-          icon={<Grid size={16} />}
-          label="Month"
-        />
-        <ViewOption
-          active={view === 'timeGridWeek'}
-          onClick={() => onViewChange('timeGridWeek')}
-          icon={<Grid3X3 size={16} />}
-          label="Week"
-        />
-        <ViewOption
-          active={view === 'timeGridDay'}
-          onClick={() => onViewChange('timeGridDay')}
-          icon={<Calendar size={16} />}
-          label="Day"
-        />
-        <ViewOption
-          active={view === 'listMonth'}
-          onClick={() => onViewChange('listMonth')}
-          icon={<List size={16} />}
-          label="List"
-        />
-      </div>
-    </div>
+      <ToggleButtonGroup
+        value={view}
+        exclusive
+        onChange={(_, newView) => newView && onViewChange(newView)}
+        size="small"
+        sx={{
+          width: { xs: '100%', md: 'auto' },
+          '& .MuiToggleButton-root': {
+            borderRadius: 1,
+            textTransform: 'none',
+            fontWeight: 500,
+            px: 2,
+            py: 1
+          }
+        }}
+      >
+        <ToggleButton value="dayGridMonth" aria-label="month view">
+          <CalendarMonth sx={{ mr: { xs: 0, sm: 1 }, fontSize: 20 }} />
+          {!isMobile && <span>Month</span>}
+        </ToggleButton>
+        <ToggleButton value="timeGridWeek" aria-label="week view">
+          <ViewWeek sx={{ mr: { xs: 0, sm: 1 }, fontSize: 20 }} />
+          {!isMobile && <span>Week</span>}
+        </ToggleButton>
+        <ToggleButton value="timeGridDay" aria-label="day view">
+          <ViewDay sx={{ mr: { xs: 0, sm: 1 }, fontSize: 20 }} />
+          {!isMobile && <span>Day</span>}
+        </ToggleButton>
+        <ToggleButton value="listMonth" aria-label="list view">
+          <List sx={{ mr: { xs: 0, sm: 1 }, fontSize: 20 }} />
+          {!isMobile && <span>List</span>}
+        </ToggleButton>
+      </ToggleButtonGroup>
+    </Paper>
   );
 };
-
-const ViewOption = ({ active, onClick, icon, label }) => (
-  <button
-    onClick={onClick}
-    className={clsx(
-      'flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all',
-      active
-        ? 'bg-primary text-white shadow-sm'
-        : 'text-text-secondary hover:text-text-primary hover:bg-card'
-    )}
-  >
-    {icon}
-    <span className="hidden sm:inline">{label}</span>
-  </button>
-);
 
 export default CalendarHeader;

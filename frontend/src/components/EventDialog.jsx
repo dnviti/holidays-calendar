@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
-import Modal from './ui/Modal';
-import { Clock, Calendar, User, Edit, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  Chip,
+  Avatar,
+  Divider,
+  IconButton
+} from '@mui/material';
+import {
+  CalendarToday,
+  Edit,
+  Delete,
+  Close
+} from '@mui/icons-material';
 import { format } from 'date-fns';
-import Button from './ui/Button';
 import EventForm from './EventForm';
 
-const EventDialog = ({ open, onClose, event, onUpdate, onDelete }) => {
+const EventDialog = ({ open, onClose, event, onUpdate, onDelete, businessUnits = [] }) => {
+  const [showEditDialog, setShowEditDialog] = useState(false);
+
   if (!event) return null;
 
-  // Extended props might contain custom data from backend
   const { extendedProps } = event;
   const start = event.start;
   const end = event.end || event.start;
 
-  // Helper to format date range
   const getDateRange = () => {
     if (!start) return '';
     if (event.allDay) {
@@ -22,21 +38,17 @@ const EventDialog = ({ open, onClose, event, onUpdate, onDelete }) => {
     return `${format(start, 'PPP p')} - ${format(end, 'p')}`;
   };
 
-  const [showEditDialog, setShowEditDialog] = useState(false);
-
   const handleEdit = () => {
-    // Open edit dialog instead of just calling onUpdate
     setShowEditDialog(true);
   };
 
   const handleEditSubmit = async (updatedData) => {
     try {
-      // In a real implementation, we would call the API to update the event
-      // For now, we'll just close the dialog and call onUpdate with the updated data
       if (onUpdate) {
-        onUpdate({...event, ...updatedData});
+        await onUpdate({ id: event.id, ...updatedData });
       }
       setShowEditDialog(false);
+      onClose();
     } catch (error) {
       console.error('Error updating event:', error);
     }
@@ -53,99 +65,155 @@ const EventDialog = ({ open, onClose, event, onUpdate, onDelete }) => {
 
   return (
     <>
-      <Modal
-        isOpen={open}
+      <Dialog
+        open={open}
         onClose={onClose}
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary text-white font-bold text-lg">
-              {extendedProps?.userName?.charAt(0) || <User size={20} />}
-            </div>
-            <div>
-              <div className="font-semibold">{extendedProps?.userEmail || 'Team Member'}</div>
-              <div className="text-xs text-text-secondary">{extendedProps?.userName}</div>
-            </div>
-          </div>
-        }
+        maxWidth="sm"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 2
+            }
+          }
+        }}
       >
-        <div className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xl font-bold text-primary">
+        <DialogTitle sx={{ pb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Avatar
+                sx={{
+                  bgcolor: 'primary.main',
+                  width: 48,
+                  height: 48,
+                  fontSize: '1.25rem',
+                  fontWeight: 600
+                }}
+              >
+                {extendedProps?.userName?.charAt(0)?.toUpperCase() || 'T'}
+              </Avatar>
+              <Box>
+                <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                  {extendedProps?.userName || 'Team Member'}
+                </Typography>
+              </Box>
+            </Box>
+            <IconButton
+              onClick={onClose}
+              size="small"
+              sx={{ color: 'text.secondary' }}
+            >
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+
+        <Divider />
+
+        <DialogContent sx={{ pt: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: 'primary.main' }}>
                 {event.title}
-              </h3>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${event.backgroundColor === 'var(--danger-color)'
-                ? 'bg-danger/10 text-danger'
-                : 'bg-primary/10 text-primary'
-                }`} style={{
-                  color: event.backgroundColor === 'var(--danger-color)' ? 'var(--danger-color)' : 'var(--primary-color)',
-                  backgroundColor: event.backgroundColor === 'var(--danger-color)' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)'
-                }}>
-                {extendedProps?.category || 'Holiday'}
-              </span>
-            </div>
-          </div>
+              </Typography>
+              <Chip
+                label={extendedProps?.eventType?.replace('_', ' ') || extendedProps?.category || 'Event'}
+                color="primary"
+                size="small"
+                sx={{ fontWeight: 500 }}
+              />
+            </Box>
 
-          <div className="flex items-center gap-3 text-text-secondary">
-            <Calendar size={20} />
-            <span>{getDateRange()}</span>
-          </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
+              <CalendarToday sx={{ fontSize: 20 }} />
+              <Typography variant="body1">{getDateRange()}</Typography>
+            </Box>
 
-          {extendedProps?.description && (
-            <div className="p-3 bg-surface rounded-md border border-border text-sm text-text-secondary">
-              {extendedProps.description}
-            </div>
-          )}
-
-          <div className="flex justify-between pt-4">
-            <div className="flex space-x-2">
-              <Button
-                variant="secondary"
-                onClick={handleEdit}
-                startIcon={<Edit size={16} />}
+            {extendedProps?.description && (
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: 'action.hover',
+                  borderRadius: 1,
+                  border: 1,
+                  borderColor: 'divider'
+                }}
               >
-                Edit
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDelete}
-                startIcon={<Trash2 size={16} />}
-              >
-                Delete
-              </Button>
-            </div>
-            <Button variant="secondary" onClick={onClose}>Close</Button>
-          </div>
-        </div>
-      </Modal>
+                <Typography variant="body2" color="text.secondary">
+                  {extendedProps.description}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+
+        <Divider />
+
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Box sx={{ flex: 1, display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Edit />}
+              onClick={handleEdit}
+              size="small"
+            >
+              Edit
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<Delete />}
+              onClick={handleDelete}
+              size="small"
+            >
+              Delete
+            </Button>
+          </Box>
+          <Button variant="outlined" onClick={onClose}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Edit Event Dialog */}
       {showEditDialog && (
-        <Modal
-          isOpen={showEditDialog}
+        <Dialog
+          open={showEditDialog}
           onClose={() => setShowEditDialog(false)}
-          title="Edit Event"
+          maxWidth="sm"
+          fullWidth
+          slotProps={{
+            paper: {
+              sx: {
+                borderRadius: 2
+              }
+            }
+          }}
         >
-          <EventForm
-            initialData={{
-              title: event.title,
-              description: event.extendedProps?.description || '',
-              start_date: event.start ? event.start.toISOString().split('T')[0] : '',
-              end_date: event.end ? event.end.toISOString().split('T')[0] : event.start ? event.start.toISOString().split('T')[0] : '',
-              start_time: event.extendedProps?.start_time || '09:00',
-              end_time: event.extendedProps?.end_time || '17:00',
-              event_type: event.extendedProps?.event_type || 'holiday',
-              visibility: event.extendedProps?.visibility || 'private',
-              is_all_day: event.allDay || event.extendedProps?.is_all_day || false,
-              location: event.extendedProps?.location || '',
-              color: event.extendedProps?.color || '#3B82F6',
-              business_unit_id: event.extendedProps?.business_unit_id || ''
-            }}
-            onSubmit={handleEditSubmit}
-            onCancel={() => setShowEditDialog(false)}
-            businessUnits={[]} // Pass business units if available
-          />
-        </Modal>
+          <DialogTitle sx={{ fontWeight: 600 }}>Edit Event</DialogTitle>
+          <Divider />
+          <DialogContent sx={{ pt: 3 }}>
+            <EventForm
+              initialData={{
+                title: event.title,
+                description: event.extendedProps?.description || '',
+                start_date: event.start ? event.start.toISOString().split('T')[0] : '',
+                end_date: event.end ? event.end.toISOString().split('T')[0] : event.start ? event.start.toISOString().split('T')[0] : '',
+                start_time: event.extendedProps?.start_time || '09:00',
+                end_time: event.extendedProps?.end_time || '17:00',
+                event_type: event.extendedProps?.eventType || 'holiday',
+                visibility: event.extendedProps?.visibility || 'private',
+                is_all_day: event.allDay || event.extendedProps?.is_all_day || false,
+                location: event.extendedProps?.location || '',
+                color: event.extendedProps?.color || '#3B82F6',
+                business_unit_id: event.extendedProps?.business_unit_id || ''
+              }}
+              onSubmit={handleEditSubmit}
+              onCancel={() => setShowEditDialog(false)}
+              businessUnits={businessUnits}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );

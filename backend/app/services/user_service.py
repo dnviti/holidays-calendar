@@ -9,6 +9,7 @@ from sqlmodel import Session, select
 from app.models.user import User, UserCreate, UserUpdate, UserRole, UserBusinessUnit
 from app.models.business_unit import BusinessUnit
 from app.core.security import get_password_hash
+from sqlalchemy.orm import selectinload
 
 
 class UserService:
@@ -45,6 +46,17 @@ class UserService:
     def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         """Get user by ID."""
         return self.session.get(User, user_id)
+
+    def get_user_by_id_with_business_units(self, user_id: UUID) -> Optional[User]:
+        """Get user by ID with business units loaded."""
+        user = self.session.exec(
+            select(User)
+            .where(User.id == user_id)
+            .options(
+                selectinload(User.business_unit_memberships).selectinload(UserBusinessUnit.business_unit)
+            )
+        ).first()
+        return user
     
     def get_user_by_email(self, email: str) -> Optional[User]:
         """Get user by email."""
@@ -67,13 +79,34 @@ class UserService:
     ) -> List[User]:
         """Get all users with optional filtering."""
         query = select(User)
-        
+
         if is_active is not None:
             query = query.where(User.is_active == is_active)
-        
+
         if role:
             query = query.where(User.role == role)
-        
+
+        query = query.offset(skip).limit(limit)
+        return list(self.session.exec(query).all())
+
+    def get_all_users_with_business_units(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        is_active: Optional[bool] = None,
+        role: Optional[UserRole] = None,
+    ) -> List[User]:
+        """Get all users with their business units loaded."""
+        query = select(User).options(
+            selectinload(User.business_unit_memberships).selectinload(UserBusinessUnit.business_unit)
+        )
+
+        if is_active is not None:
+            query = query.where(User.is_active == is_active)
+
+        if role:
+            query = query.where(User.role == role)
+
         query = query.offset(skip).limit(limit)
         return list(self.session.exec(query).all())
     
@@ -114,6 +147,16 @@ class UserService:
         is_manager: bool = False,
     ) -> Optional[UserBusinessUnit]:
         """Add user to a business unit."""
+        # Validate that user exists
+        user = self.session.get(User, user_id)
+        if not user:
+            return None
+
+        # Validate that business unit exists
+        business_unit = self.session.get(BusinessUnit, business_unit_id)
+        if not business_unit:
+            return None
+
         # Check if already a member
         existing = self.session.exec(
             select(UserBusinessUnit).where(
@@ -121,18 +164,22 @@ class UserService:
                 UserBusinessUnit.business_unit_id == business_unit_id,
             )
         ).first()
-        
+
         if existing:
             existing.is_manager = is_manager
+            self.session.add(existing)
+            self.session.flush()
             self.session.commit()
+            self.session.refresh(existing)
             return existing
-        
+
         membership = UserBusinessUnit(
             user_id=user_id,
             business_unit_id=business_unit_id,
             is_manager=is_manager,
         )
         self.session.add(membership)
+        self.session.flush()
         self.session.commit()
         self.session.refresh(membership)
         return membership

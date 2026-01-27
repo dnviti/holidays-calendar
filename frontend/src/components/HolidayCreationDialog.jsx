@@ -6,10 +6,10 @@ import {
   Alert,
   Divider
 } from '@mui/material';
-import EventForm from './EventForm';
-import { createEvent } from '../services/eventService';
+import HolidayForm from './HolidayForm';
+import { createHoliday } from '../services/holidayService';
 
-const EventCreationDialog = ({ open, onClose, onSuccess, selectedDate, businessUnits = [] }) => {
+const HolidayCreationDialog = ({ open, onClose, onSuccess, selectedDate, businessUnits = [], selectedBusinessUnit = null }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,27 +19,22 @@ const EventCreationDialog = ({ open, onClose, onSuccess, selectedDate, businessU
     }
   }, [open, selectedDate]);
 
-  const handleCreateEvent = async (eventData) => {
+  const handleCreateHoliday = async (holidayData) => {
     setLoading(true);
     setError('');
 
     try {
       // If a date was selected, use it as the start/end date
       if (selectedDate) {
-        eventData.start_date = selectedDate;
-        eventData.end_date = selectedDate;
+        holidayData.start_date = selectedDate;
+        holidayData.end_date = selectedDate;
       }
 
-      // Default to "other" event type if not specified
-      if (!eventData.event_type) {
-        eventData.event_type = 'other';
-      }
-
-      const newEvent = await createEvent(eventData);
-      onSuccess(newEvent);
+      const newHoliday = await createHoliday(holidayData);
+      onSuccess(newHoliday);
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to create event');
+      setError(err.message || 'Failed to create leave request');
     } finally {
       setLoading(false);
     }
@@ -60,7 +55,7 @@ const EventCreationDialog = ({ open, onClose, onSuccess, selectedDate, businessU
       }}
     >
       <DialogTitle sx={{ fontWeight: 600, pb: 2 }}>
-        Create New Event
+        New Leave Request
       </DialogTitle>
 
       <Divider />
@@ -72,10 +67,12 @@ const EventCreationDialog = ({ open, onClose, onSuccess, selectedDate, businessU
           </Alert>
         )}
 
-        <EventForm
-          onSubmit={handleCreateEvent}
+        <HolidayForm
+          initialData={selectedDate ? { start_date: selectedDate, end_date: selectedDate } : null}
+          onSubmit={handleCreateHoliday}
           onCancel={onClose}
           businessUnits={businessUnits}
+          selectedBusinessUnit={selectedBusinessUnit}
           loading={loading}
         />
       </DialogContent>
@@ -83,4 +80,4 @@ const EventCreationDialog = ({ open, onClose, onSuccess, selectedDate, businessU
   );
 };
 
-export default EventCreationDialog;
+export default HolidayCreationDialog;

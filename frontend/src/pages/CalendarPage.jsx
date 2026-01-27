@@ -10,12 +10,16 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
-  Fab,
-  Grid
+  CircularProgress
 } from '@mui/material';
-import { Add } from '@mui/icons-material';
-import { getCalendarEvents, updateEvent, deleteEvent } from '../services/eventService';
+import {
+  getCalendarHolidays,
+  updateHoliday,
+  deleteHoliday,
+  approveHoliday,
+  rejectHoliday,
+  requestChangeHoliday
+} from '../services/holidayService';
 
 const CalendarPage = () => {
   const [calendarEvents, setCalendarEvents] = useState([]);
@@ -41,10 +45,14 @@ const CalendarPage = () => {
       setBusinessUnits(response.data);
       if (response.data.length > 0) {
         setSelectedBU(response.data[0].id);
+      } else {
+        // No business units available, stop loading
+        setLoading(false);
       }
     } catch (error) {
       console.error(error);
       toast.error('Failed to fetch business units');
+      setLoading(false);
     }
   };
 
@@ -56,17 +64,34 @@ const CalendarPage = () => {
       const end = new Date().getFullYear() + '-12-31';
 
       // Fetch holidays
-      const holidaysResponse = await api.get(`/holidays/calendar?business_unit_id=${buId}&start_date=${start}&end_date=${end}`);
-      const holidays = holidaysResponse.data;
+      const holidays = await getCalendarHolidays(buId, start, end);
 
-      // Fetch events
-      const eventsResponse = await getCalendarEvents(start, end, buId);
-      const events = eventsResponse;
+      // Transform holiday API data to FullCalendar format
+      const transformedHolidays = holidays.map(holiday => ({
+        id: holiday.id,
+        title: holiday.title,
+        start: holiday.start,
+        end: holiday.end,
+        allDay: true, // Holidays are always all-day events
+        backgroundColor: holiday.color,
+        borderColor: holiday.color,
+        textColor: '#ffffff',
+        extendedProps: {
+          user_id: holiday.user_id,
+          userName: holiday.user_name,
+          userAvatar: holiday.user_avatar,
+          holidayType: holiday.holiday_type,
+          status: holiday.status,
+          has_overlap: holiday.has_overlap,
+          is_half_day: holiday.is_half_day,
+          half_day_period: holiday.half_day_period,
+          business_unit_id: buId,
+          description: holiday.description || '',
+          category: 'holiday'
+        }
+      }));
 
-      // Combine holidays and events
-      const combinedEvents = [...holidays, ...events];
-
-      setCalendarEvents(combinedEvents);
+      setCalendarEvents(transformedHolidays);
     } catch (error) {
       console.error(error);
       toast.error('Failed to load calendar data');
@@ -76,125 +101,354 @@ const CalendarPage = () => {
     }
   };
 
-  const handleCreateEvent = async (newEvent) => {
+  const handleCreateHoliday = async (newHoliday) => {
     try {
-      // Add the new event to the calendar
-      setCalendarEvents(prev => [...prev, newEvent]);
-      toast.success('Event created successfully!');
+      // Transform the API response to FullCalendar format
+      const transformedHoliday = {
+        id: newHoliday.id,
+        title: newHoliday.title,
+        start: newHoliday.start_date,
+        end: newHoliday.end_date,
+        allDay: true,
+        backgroundColor: newHoliday.color || '#3B82F6',
+        borderColor: newHoliday.color || '#3B82F6',
+        textColor: '#ffffff',
+        extendedProps: {
+          user_id: newHoliday.user_id,
+          userName: newHoliday.user_name,
+          userAvatar: newHoliday.user_avatar,
+          holidayType: newHoliday.holiday_type,
+          status: newHoliday.status,
+          has_overlap: newHoliday.has_overlap,
+          is_half_day: newHoliday.is_half_day,
+          half_day_period: newHoliday.half_day_period,
+          business_unit_id: newHoliday.business_unit_id,
+          description: newHoliday.description || '',
+          manager_notes: newHoliday.manager_notes,
+          category: 'holiday'
+        }
+      };
+
+      // Add the new holiday to the calendar
+      setCalendarEvents(prev => [...prev, transformedHoliday]);
+      toast.success('Leave request created successfully!');
     } catch (error) {
-      toast.error('Failed to create event');
+      toast.error('Failed to create leave request');
     }
   };
 
-  const handleUpdateEvent = async (updatedEvent) => {
+  const handleUpdateHoliday = async (updatedHoliday) => {
     try {
-      // Update the event in the backend
-      const updatedEventFromAPI = await updateEvent(updatedEvent.id, updatedEvent);
+      // Extract ID and remove it from the update data
+      const { id, ...updateData } = updatedHoliday;
 
-      setCalendarEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEventFromAPI : e));
-      toast.success('Event updated successfully!');
+      // Update the holiday in the backend
+      const updatedHolidayFromAPI = await updateHoliday(id, updateData);
+
+      // Transform the API response to FullCalendar format
+      const transformedHoliday = {
+        id: updatedHolidayFromAPI.id,
+        title: updatedHolidayFromAPI.title,
+        start: updatedHolidayFromAPI.start_date,
+        end: updatedHolidayFromAPI.end_date,
+        allDay: true,
+        backgroundColor: updatedHolidayFromAPI.color || '#3B82F6',
+        borderColor: updatedHolidayFromAPI.color || '#3B82F6',
+        textColor: '#ffffff',
+        extendedProps: {
+          user_id: updatedHolidayFromAPI.user_id,
+          userName: updatedHolidayFromAPI.user_name,
+          userAvatar: updatedHolidayFromAPI.user_avatar,
+          holidayType: updatedHolidayFromAPI.holiday_type,
+          status: updatedHolidayFromAPI.status,
+          has_overlap: updatedHolidayFromAPI.has_overlap,
+          is_half_day: updatedHolidayFromAPI.is_half_day,
+          half_day_period: updatedHolidayFromAPI.half_day_period,
+          business_unit_id: updatedHolidayFromAPI.business_unit_id,
+          description: updatedHolidayFromAPI.description || '',
+          manager_notes: updatedHolidayFromAPI.manager_notes,
+          category: 'holiday'
+        }
+      };
+
+      setCalendarEvents(prev => prev.map(e => e.id === id ? transformedHoliday : e));
+      toast.success('Leave request updated successfully!');
     } catch (error) {
-      toast.error('Failed to update event');
+      console.error('Update error:', error);
+      toast.error('Failed to update leave request');
     }
   };
 
   const handleEventDrop = async (dropInfo) => {
     try {
-      // Prepare the update data
-      const updatedEventData = {
+      // For holidays, drag-and-drop updates the dates
+      const updatedHolidayData = {
         start_date: dropInfo.event.start.toISOString().split('T')[0],
         end_date: dropInfo.event.end ? dropInfo.event.end.toISOString().split('T')[0] : dropInfo.event.start.toISOString().split('T')[0],
       };
 
-      // If the event has time components, include them
-      if (dropInfo.event.start.getHours() || dropInfo.event.start.getMinutes()) {
-        updatedEventData.start_time = `${String(dropInfo.event.start.getHours()).padStart(2, '0')}:${String(dropInfo.event.start.getMinutes()).padStart(2, '0')}`;
-      }
+      // Update the holiday in the backend
+      const updatedHoliday = await updateHoliday(dropInfo.event.id, updatedHolidayData);
 
-      if (dropInfo.event.end && (dropInfo.event.end.getHours() || dropInfo.event.end.getMinutes())) {
-        updatedEventData.end_time = `${String(dropInfo.event.end.getHours()).padStart(2, '0')}:${String(dropInfo.event.end.getMinutes()).padStart(2, '0')}`;
-      }
+      // Transform and update in calendar
+      const transformedHoliday = {
+        id: updatedHoliday.id,
+        title: updatedHoliday.title,
+        start: updatedHoliday.start_date,
+        end: updatedHoliday.end_date,
+        allDay: true,
+        backgroundColor: updatedHoliday.color || '#3B82F6',
+        borderColor: updatedHoliday.color || '#3B82F6',
+        textColor: '#ffffff',
+        extendedProps: {
+          user_id: updatedHoliday.user_id,
+          userName: updatedHoliday.user_name,
+          userAvatar: updatedHoliday.user_avatar,
+          holidayType: updatedHoliday.holiday_type,
+          status: updatedHoliday.status,
+          has_overlap: updatedHoliday.has_overlap,
+          is_half_day: updatedHoliday.is_half_day,
+          half_day_period: updatedHoliday.half_day_period,
+          business_unit_id: updatedHoliday.business_unit_id,
+          description: updatedHoliday.description || '',
+          manager_notes: updatedHoliday.manager_notes,
+          category: 'holiday'
+        }
+      };
 
-      // Update the event in the backend
-      const updatedEvent = await updateEvent(dropInfo.event.id, updatedEventData);
-
-      // Update the event in the calendar
       setCalendarEvents(prev =>
-        prev.map(e => e.id === dropInfo.event.id ? updatedEvent : e)
+        prev.map(e => e.id === dropInfo.event.id ? transformedHoliday : e)
       );
 
-      toast.success('Event moved successfully!');
+      toast.success('Leave dates updated successfully!');
     } catch (error) {
-      toast.error('Failed to move event');
+      toast.error('Failed to move leave request');
+      // Revert the drop
+      dropInfo.revert();
     }
   };
 
-  const handleDeleteEvent = async (eventId) => {
+  const handleDeleteHoliday = async (holidayId) => {
     try {
-      // Delete the event from the backend
-      await deleteEvent(eventId);
+      // Delete the holiday from the backend
+      await deleteHoliday(holidayId);
 
-      // Remove the event from the calendar
-      setCalendarEvents(prev => prev.filter(e => e.id !== eventId));
-      toast.success('Event deleted successfully!');
+      // Remove the holiday from the calendar
+      setCalendarEvents(prev => prev.filter(e => e.id !== holidayId));
+      toast.success('Leave request cancelled successfully!');
     } catch (error) {
-      toast.error('Failed to delete event');
+      toast.error('Failed to cancel leave request');
+    }
+  };
+
+  const handleApproveHoliday = async (holidayId, notes) => {
+    try {
+      const updatedHoliday = await approveHoliday(holidayId, notes);
+
+      // Transform and update in calendar
+      const transformedHoliday = {
+        id: updatedHoliday.id,
+        title: updatedHoliday.title,
+        start: updatedHoliday.start_date,
+        end: updatedHoliday.end_date,
+        allDay: true,
+        backgroundColor: updatedHoliday.color || '#10B981', // Green for approved
+        borderColor: updatedHoliday.color || '#10B981',
+        textColor: '#ffffff',
+        extendedProps: {
+          user_id: updatedHoliday.user_id,
+          userName: updatedHoliday.user_name,
+          userAvatar: updatedHoliday.user_avatar,
+          holidayType: updatedHoliday.holiday_type,
+          status: 'approved',
+          has_overlap: updatedHoliday.has_overlap,
+          is_half_day: updatedHoliday.is_half_day,
+          half_day_period: updatedHoliday.half_day_period,
+          business_unit_id: updatedHoliday.business_unit_id,
+          description: updatedHoliday.description || '',
+          manager_notes: updatedHoliday.manager_notes,
+          category: 'holiday'
+        }
+      };
+
+      setCalendarEvents(prev => prev.map(e => e.id === holidayId ? transformedHoliday : e));
+      toast.success('Leave request approved!');
+    } catch (error) {
+      toast.error('Failed to approve leave request');
+    }
+  };
+
+  const handleRejectHoliday = async (holidayId, notes) => {
+    try {
+      const updatedHoliday = await rejectHoliday(holidayId, notes);
+
+      // Transform and update in calendar
+      const transformedHoliday = {
+        id: updatedHoliday.id,
+        title: updatedHoliday.title,
+        start: updatedHoliday.start_date,
+        end: updatedHoliday.end_date,
+        allDay: true,
+        backgroundColor: '#EF4444', // Red for rejected
+        borderColor: '#EF4444',
+        textColor: '#ffffff',
+        extendedProps: {
+          user_id: updatedHoliday.user_id,
+          userName: updatedHoliday.user_name,
+          userAvatar: updatedHoliday.user_avatar,
+          holidayType: updatedHoliday.holiday_type,
+          status: 'rejected',
+          has_overlap: updatedHoliday.has_overlap,
+          is_half_day: updatedHoliday.is_half_day,
+          half_day_period: updatedHoliday.half_day_period,
+          business_unit_id: updatedHoliday.business_unit_id,
+          description: updatedHoliday.description || '',
+          manager_notes: notes,
+          category: 'holiday'
+        }
+      };
+
+      setCalendarEvents(prev => prev.map(e => e.id === holidayId ? transformedHoliday : e));
+      toast.success('Leave request rejected');
+    } catch (error) {
+      toast.error('Failed to reject leave request');
+    }
+  };
+
+  const handleRequestChange = async (holidayId, notes) => {
+    try {
+      const updatedHoliday = await requestChangeHoliday(holidayId, notes);
+
+      // Transform and update in calendar
+      const transformedHoliday = {
+        id: updatedHoliday.id,
+        title: updatedHoliday.title,
+        start: updatedHoliday.start_date,
+        end: updatedHoliday.end_date,
+        allDay: true,
+        backgroundColor: '#F97316', // Orange for change requested
+        borderColor: '#F97316',
+        textColor: '#ffffff',
+        extendedProps: {
+          user_id: updatedHoliday.user_id,
+          userName: updatedHoliday.user_name,
+          userAvatar: updatedHoliday.user_avatar,
+          holidayType: updatedHoliday.holiday_type,
+          status: 'change_requested',
+          has_overlap: updatedHoliday.has_overlap,
+          is_half_day: updatedHoliday.is_half_day,
+          half_day_period: updatedHoliday.half_day_period,
+          business_unit_id: updatedHoliday.business_unit_id,
+          description: updatedHoliday.description || '',
+          manager_notes: notes,
+          category: 'holiday'
+        }
+      };
+
+      setCalendarEvents(prev => prev.map(e => e.id === holidayId ? transformedHoliday : e));
+      toast.success('Change requested');
+    } catch (error) {
+      toast.error('Failed to request change');
     }
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 2, p: 1 }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 2, p: 3 }}>
       {/* Header Section */}
-      <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Grid>
-          <Typography variant="h4" component="h1" gutterBottom>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'stretch', md: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+          mb: 3
+        }}
+      >
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
             Team Calendar
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            View holidays and events for your team
+            Manage team leave requests and view availability
           </Typography>
-        </Grid>
+        </Box>
 
-        <Grid xs={12} md="auto">
-          <FormControl fullWidth variant="outlined" sx={{ minWidth: 250 }}>
-            <InputLabel>Select Business Unit</InputLabel>
-            <Select
-              value={selectedBU}
-              onChange={(e) => setSelectedBU(e.target.value)}
-              label="Select Business Unit"
-              disabled={loading}
-            >
-              {businessUnits.map((bu) => (
-                <MenuItem key={bu.id} value={bu.id}>
-                  {bu.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
+        <FormControl
+          variant="outlined"
+          sx={{
+            minWidth: { xs: '100%', md: 250 }
+          }}
+        >
+          <InputLabel>Select Business Unit</InputLabel>
+          <Select
+            value={selectedBU}
+            onChange={(e) => setSelectedBU(e.target.value)}
+            label="Select Business Unit"
+            disabled={loading}
+          >
+            {businessUnits.map((bu) => (
+              <MenuItem key={bu.id} value={bu.id}>
+                {bu.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
 
       {/* Calendar Area */}
-      <Box sx={{ flex: 1, position: 'relative', minHeight: 0, bgcolor: 'background.paper', borderRadius: 2, p: 2 }}>
-        {loading && !calendarEvents.length ? (
-          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ flex: 1, position: 'relative', minHeight: 0 }}>
+        {loading ? (
+          <Box
+            sx={{
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'background.paper',
+              borderRadius: 2
+            }}
+          >
             <CircularProgress />
+          </Box>
+        ) : businessUnits.length === 0 ? (
+          <Box
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+              bgcolor: 'background.paper',
+              borderRadius: 2,
+              p: 4
+            }}
+          >
+            <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
+              No business units available
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Please contact your administrator to set up business units.
+            </Typography>
           </Box>
         ) : (
           <CalendarView
             events={calendarEvents}
             businessUnitName={businessUnits.find(b => b.id === selectedBU)?.name}
-            onCreateEvent={handleCreateEvent}
-            onUpdateEvent={handleUpdateEvent}
-            onDeleteEvent={handleDeleteEvent}
+            selectedBusinessUnit={selectedBU}
+            onCreateEvent={handleCreateHoliday}
+            onUpdateEvent={handleUpdateHoliday}
+            onDeleteEvent={handleDeleteHoliday}
             onEventDrop={handleEventDrop}
+            onApproveEvent={handleApproveHoliday}
+            onRejectEvent={handleRejectHoliday}
+            onRequestChange={handleRequestChange}
             businessUnits={businessUnits}
             showEventCreation={true}
           />
         )}
       </Box>
-
-      {/* Floating Action Button - This is now handled by the CalendarView component */}
     </Box>
   );
 };

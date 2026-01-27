@@ -25,31 +25,43 @@ import {
   Chip,
   Stack,
   IconButton,
-  Tooltip
+  Tooltip,
+  OutlinedInput,
+  FormHelperText
 } from '@mui/material';
-import { Add, Edit, Delete, PersonAdd } from '@mui/icons-material';
+import { Add, Edit, Delete, PersonAdd, Close } from '@mui/icons-material';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [businessUnits, setBusinessUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [userBusinessUnits, setUserBusinessUnits] = useState([]);
   const [formData, setFormData] = useState({
     email: '',
     display_name: '',
     first_name: '',
     last_name: '',
     role: 'employee',
-    password: ''
+    password: '',
+    business_unit_ids: []
   });
 
   useEffect(() => {
     fetchUsers();
+    fetchBusinessUnits();
   }, []);
 
   const fetchUsers = async () => {
     try {
+      console.log('Fetching all users...');
       const response = await api.get('/users');
+      console.log('All users response:', response.data);
+      console.log('Users with business units:', response.data.map(u => ({
+        email: u.email,
+        business_units: u.business_units
+      })));
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -59,7 +71,30 @@ const Users = () => {
     }
   };
 
-  const handleOpenDialog = (user = null) => {
+  const fetchBusinessUnits = async () => {
+    try {
+      const response = await api.get('/business-units');
+      setBusinessUnits(response.data);
+    } catch (error) {
+      console.error('Error fetching business units:', error);
+      toast.error('Failed to fetch business units');
+    }
+  };
+
+  const fetchUserBusinessUnits = async (userId) => {
+    try {
+      console.log('Fetching business units for user:', userId);
+      const response = await api.get(`/users/${userId}`);
+      console.log('User data received:', response.data);
+      console.log('Business units:', response.data.business_units);
+      setUserBusinessUnits(response.data.business_units || []);
+    } catch (error) {
+      console.error('Error fetching user business units:', error);
+      toast.error('Failed to fetch user business units');
+    }
+  };
+
+  const handleOpenDialog = async (user = null) => {
     if (user) {
       setEditingUser(user);
       setFormData({
@@ -68,8 +103,11 @@ const Users = () => {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         role: user.role,
-        password: '' // Don't populate password for editing
+        password: '',
+        business_unit_ids: []
       });
+      // Fetch user's business units
+      await fetchUserBusinessUnits(user.id);
     } else {
       setEditingUser(null);
       setFormData({
@@ -78,8 +116,10 @@ const Users = () => {
         first_name: '',
         last_name: '',
         role: 'employee',
-        password: ''
+        password: '',
+        business_unit_ids: []
       });
+      setUserBusinessUnits([]);
     }
     setOpenDialog(true);
   };
@@ -87,13 +127,15 @@ const Users = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingUser(null);
+    setUserBusinessUnits([]);
     setFormData({
       email: '',
       display_name: '',
       first_name: '',
       last_name: '',
       role: 'employee',
-      password: ''
+      password: '',
+      business_unit_ids: []
     });
   };
 
@@ -107,18 +149,25 @@ const Users = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    // Validate business units for new users
+    if (!editingUser && formData.business_unit_ids.length === 0) {
+      toast.error('Please select at least one business unit');
+      return;
+    }
+
     try {
       if (editingUser) {
-        // Update existing user
-        await api.put(`/users/${editingUser.id}`, formData);
+        // Update existing user (business units managed separately)
+        const { business_unit_ids, ...updateData } = formData;
+        await api.put(`/users/${editingUser.id}`, updateData);
         toast.success('User updated successfully');
       } else {
-        // Create new user
+        // Create new user with business units
         await api.post('/users', formData);
         toast.success('User created successfully');
       }
-      
+
       handleCloseDialog();
       fetchUsers();
     } catch (error) {
@@ -137,6 +186,53 @@ const Users = () => {
         console.error('Error deleting user:', error);
         toast.error(error.response?.data?.detail || 'Failed to delete user');
       }
+    }
+  };
+
+  const handleAddBusinessUnit = async (buId) => {
+    if (!editingUser) return;
+
+    try {
+      console.log('Adding business unit:', buId, 'to user:', editingUser.id);
+      const response = await api.post(`/users/${editingUser.id}/business-units/${buId}`);
+      console.log('Add response:', response.data);
+
+      // Refresh the business units and main user list
+      await Promise.all([
+        fetchUserBusinessUnits(editingUser.id),
+        fetchUsers()
+      ]);
+
+      toast.success('Business unit added successfully');
+    } catch (error) {
+      console.error('Error adding business unit:', error);
+      toast.error(error.response?.data?.detail || 'Failed to add business unit');
+    }
+  };
+
+  const handleRemoveBusinessUnit = async (buId) => {
+    if (!editingUser) return;
+
+    // Check if this is the last business unit
+    if (userBusinessUnits.length <= 1) {
+      toast.error('User must belong to at least one business unit');
+      return;
+    }
+
+    try {
+      console.log('Removing business unit:', buId, 'from user:', editingUser.id);
+      await api.delete(`/users/${editingUser.id}/business-units/${buId}`);
+
+      // Refresh the business units and main user list
+      await Promise.all([
+        fetchUserBusinessUnits(editingUser.id),
+        fetchUsers()
+      ]);
+
+      toast.success('Business unit removed successfully');
+    } catch (error) {
+      console.error('Error removing business unit:', error);
+      toast.error(error.response?.data?.detail || 'Failed to remove business unit');
     }
   };
 
@@ -183,6 +279,7 @@ const Users = () => {
               <TableCell>Email</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Role</TableCell>
+              <TableCell>Business Units</TableCell>
               <TableCell>Status</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -202,6 +299,25 @@ const Users = () => {
                   />
                 </TableCell>
                 <TableCell>
+                  <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                    {user.business_units && user.business_units.length > 0 ? (
+                      user.business_units.map((bu) => (
+                        <Chip
+                          key={bu.id}
+                          label={bu.name}
+                          size="small"
+                          variant="outlined"
+                          sx={{ mb: 0.5 }}
+                        />
+                      ))
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No business units
+                      </Typography>
+                    )}
+                  </Stack>
+                </TableCell>
+                <TableCell>
                   <Chip
                     label={user.is_active ? 'Active' : 'Inactive'}
                     color={user.is_active ? 'success' : 'error'}
@@ -216,8 +332,8 @@ const Users = () => {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete User">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         color="error"
                         onClick={() => handleDelete(user.id)}
                       >
@@ -304,7 +420,87 @@ const Users = () => {
                 <MenuItem value="admin">Administrator</MenuItem>
               </Select>
             </FormControl>
-            
+
+            {/* Business Units Section */}
+            {!editingUser ? (
+              // Create mode: Multi-select dropdown
+              <FormControl fullWidth margin="dense" sx={{ mt: 2 }} required>
+                <InputLabel>Business Units *</InputLabel>
+                <Select
+                  multiple
+                  name="business_unit_ids"
+                  value={formData.business_unit_ids}
+                  label="Business Units *"
+                  onChange={handleChange}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => {
+                        const bu = businessUnits.find(b => b.id === value);
+                        return bu ? (
+                          <Chip key={value} label={bu.name} size="small" />
+                        ) : null;
+                      })}
+                    </Box>
+                  )}
+                >
+                  {businessUnits.map((bu) => (
+                    <MenuItem key={bu.id} value={bu.id}>
+                      {bu.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>Select at least one business unit</FormHelperText>
+              </FormControl>
+            ) : (
+              // Edit mode: Show current BUs with add/remove interface
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Business Units *
+                </Typography>
+
+                {/* Current Business Units */}
+                <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
+                  {userBusinessUnits.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      No business units assigned
+                    </Typography>
+                  ) : (
+                    userBusinessUnits.map((bu) => (
+                      <Chip
+                        key={bu.id}
+                        label={bu.name}
+                        onDelete={() => handleRemoveBusinessUnit(bu.id)}
+                        deleteIcon={<Close />}
+                        sx={{ mb: 1 }}
+                      />
+                    ))
+                  )}
+                </Stack>
+
+                {/* Add Business Unit */}
+                <FormControl fullWidth size="small">
+                  <InputLabel>Add Business Unit</InputLabel>
+                  <Select
+                    label="Add Business Unit"
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleAddBusinessUnit(e.target.value);
+                      }
+                    }}
+                  >
+                    {businessUnits
+                      .filter(bu => !userBusinessUnits.some(ubu => ubu.id === bu.id))
+                      .map((bu) => (
+                        <MenuItem key={bu.id} value={bu.id}>
+                          {bu.name}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            )}
+
             {!editingUser && (
               <TextField
                 margin="dense"

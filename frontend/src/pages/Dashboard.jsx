@@ -151,7 +151,7 @@ const Dashboard = () => {
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {/* Stats Cards */}
-        <Grid xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
             <MuiCardContent>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -164,7 +164,7 @@ const Dashboard = () => {
           </MuiCard>
         </Grid>
 
-        <Grid xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
             <MuiCardContent>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -182,7 +182,7 @@ const Dashboard = () => {
           </MuiCard>
         </Grid>
 
-        <Grid xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
             <MuiCardContent>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -196,7 +196,7 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      <Box sx={{ flex: 1, minHeight: '500px' }}>
+      <Box sx={{ flex: 1, minHeight: '600px', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <CalendarView events={events} onEventDrop={handleEventDrop} />
       </Box>
 
@@ -221,7 +221,7 @@ const Dashboard = () => {
               sx={{ mb: 2 }}
             />
             <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid xs={6}>
+              <Grid item xs={6}>
                 <TextField
                   fullWidth
                   label="Start Date"
@@ -233,7 +233,7 @@ const Dashboard = () => {
                   variant="outlined"
                 />
               </Grid>
-              <Grid xs={6}>
+              <Grid item xs={6}>
                 <TextField
                   fullWidth
                   label="End Date"
