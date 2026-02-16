@@ -1,19 +1,11 @@
-version: '3.8'
-
 services:
-  frontend:
-    build: 
-      context: ./frontend
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     restart: always
     ports:
-      - "80:80"
-    depends_on:
-      - backend
-
-  backend:
-    build: 
-      context: ./backend
-    restart: always
+      - "8000:8000"
     volumes:
       - backend_uploads:/app/uploads
     environment:
@@ -22,7 +14,8 @@ services:
       - FRONTEND_URL=http://your-domain.com
       - CORS_ORIGINS=http://your-domain.com
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15-alpine
@@ -33,6 +26,11 @@ services:
       - POSTGRES_DB=holidays
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d holidays"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   backend_uploads:
