@@ -13,11 +13,11 @@ import {
   Box,
   Stack,
   Grid,
-  Alert,
   CircularProgress
 } from '@mui/material';
 import { checkOverlaps } from '../services/holidayService';
 import { toast } from 'sonner';
+import TeamAvailabilityPanel from './TeamAvailabilityPanel';
 
 const HolidayForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [], selectedBusinessUnit = null, loading = false }) => {
   const { t } = useTranslation('forms');
@@ -34,6 +34,13 @@ const HolidayForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [
 
   const [checkingOverlaps, setCheckingOverlaps] = useState(false);
   const [overlaps, setOverlaps] = useState(null);
+
+  // Auto-select the BU when there is only one available and none is pre-selected
+  useEffect(() => {
+    if (!formData.business_unit_id && businessUnits.length === 1) {
+      setFormData(prev => ({ ...prev, business_unit_id: businessUnits[0].id }));
+    }
+  }, [businessUnits, formData.business_unit_id]);
 
   const holidayTypeOptions = [
     { value: 'vacation', label: t('types.vacation') },
@@ -215,26 +222,13 @@ const HolidayForm = ({ onSubmit, onCancel, initialData = null, businessUnits = [
           </FormControl>
         )}
 
-        {checkingOverlaps && (
-          <Alert severity="info" icon={<CircularProgress size={20} />}>
-            {t('overlapCheck.checking')}
-          </Alert>
-        )}
-
-        {overlaps?.has_overlaps && (
-          <Alert severity="warning">
-            <Box>
-              <strong>⚠️ {t('overlapCheck.warningTitle')}</strong>
-              <Box mt={1}>{t('overlapCheck.warningMessage')}</Box>
-              <Box component="ul" sx={{ mt: 1, pl: 2 }}>
-                {overlaps.overlapping_holidays.map((h) => (
-                  <li key={h.id}>
-                    {h.user_name}: {format(new Date(h.start_date), 'MMM dd')} - {format(new Date(h.end_date), 'MMM dd')}
-                  </li>
-                ))}
-              </Box>
-            </Box>
-          </Alert>
+        {(formData.start_date && formData.end_date && formData.business_unit_id) && (
+          <TeamAvailabilityPanel
+            loading={checkingOverlaps}
+            overlaps={overlaps}
+            startDate={formData.start_date}
+            endDate={formData.end_date}
+          />
         )}
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pt: 2 }}>

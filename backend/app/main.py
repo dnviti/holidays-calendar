@@ -9,7 +9,7 @@ from pathlib import Path
 
 from app.core.config import settings
 from app.core.database import create_db_and_tables
-from app.api import auth, users, business_units, holidays, events, branding, sync
+from app.api import auth, users, business_units, holidays, events, branding, sync, notifications
 
 
 @asynccontextmanager
@@ -96,6 +96,7 @@ app.include_router(holidays.router, prefix="/api")
 app.include_router(events.router, prefix="/api")
 app.include_router(branding.router, prefix="/api")
 app.include_router(sync.router, prefix="/api")
+app.include_router(notifications.router, prefix="/api")
 
 
 # Mount static files (React build)

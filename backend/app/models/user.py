@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .holiday import Holiday
     from .event import Event
     from .sync import SyncLog
+    from .notification import Notification
 
 
 class UserRole(str, Enum):
@@ -65,6 +66,9 @@ class User(UserBase, table=True):
     )
     sync_logs: List["SyncLog"] = Relationship(
         sa_relationship=relationship("SyncLog", back_populates="initiated_by")
+    )
+    notifications: List["Notification"] = Relationship(
+        sa_relationship=relationship("Notification", back_populates="recipient", cascade="all, delete-orphan")
     )
 
     def is_admin(self) -> bool:

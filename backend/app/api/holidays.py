@@ -4,8 +4,11 @@ Holiday management API endpoints.
 from datetime import date
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import Session
+import logging
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status, Query
+from sqlmodel import Session, select
+
+logger = logging.getLogger(__name__)
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, get_manager_user
@@ -20,9 +23,12 @@ from app.models.holiday import (
     HolidayStatus,
     HolidayStatusUpdate,
 )
+from app.models.user import UserBusinessUnit
 from app.services.holiday_service import HolidayService
 from app.services.user_service import UserService
 from app.services.business_unit_service import BusinessUnitService
+from app.services.notification_service import NotificationService
+from app.services.email_service import send_overlap_alert_email
 
 
 router = APIRouter(prefix="/holidays", tags=["Holidays"])
@@ -109,6 +115,7 @@ async def list_holidays(
 @router.post("", response_model=HolidayReadWithDetails, status_code=status.HTTP_201_CREATED)
 async def create_holiday(
     holiday_data: HolidayCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -119,7 +126,7 @@ async def create_holiday(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="End date must be after or equal to start date"
         )
-    
+
     # Check user is member of the business unit
     bu_service = BusinessUnitService(session)
     user_bus = bu_service.get_user_business_units(current_user)
@@ -128,11 +135,91 @@ async def create_holiday(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not a member of this business unit"
         )
-    
+
     holiday_service = HolidayService(session)
     holiday = holiday_service.create_holiday(holiday_data, current_user)
-    
+
+    # Notify BU manager when overlapping requests are detected
+    if holiday.has_overlap:
+        _notify_manager_of_overlap(
+            holiday=holiday,
+            requester=current_user,
+            holiday_service=holiday_service,
+            bu_service=bu_service,
+            session=session,
+            background_tasks=background_tasks,
+        )
+
     return enrich_holiday_details(holiday, session)
+
+
+def _notify_manager_of_overlap(
+    holiday: Holiday,
+    requester: User,
+    holiday_service: HolidayService,
+    bu_service: BusinessUnitService,
+    session: Session,
+    background_tasks: BackgroundTasks,
+) -> None:
+    """Find the BU manager and dispatch in-app + email notifications."""
+    overlapping = holiday_service.find_overlapping_holidays(
+        business_unit_id=holiday.business_unit_id,
+        start_date=holiday.start_date,
+        end_date=holiday.end_date,
+        exclude_user_id=requester.id,
+        exclude_holiday_id=holiday.id,
+    )
+
+    bu = bu_service.get_business_unit_by_id(holiday.business_unit_id)
+    bu_name = bu.name if bu else "Unknown"
+
+    # Resolve BU manager: prefer BusinessUnit.manager_id FK, fall back to membership flag
+    manager: Optional[User] = None
+    user_service = UserService(session)
+    if bu and bu.manager_id:
+        manager = user_service.get_user_by_id(bu.manager_id)
+    if manager is None:
+        mgr_membership = session.exec(
+            select(UserBusinessUnit).where(
+                UserBusinessUnit.business_unit_id == holiday.business_unit_id,
+                UserBusinessUnit.is_manager == True,  # noqa: E712
+            )
+        ).first()
+        if mgr_membership:
+            manager = user_service.get_user_by_id(mgr_membership.user_id)
+
+    if manager is None:
+        logger.warning(
+            "No manager found for BU %s — overlap notification skipped for holiday %s",
+            holiday.business_unit_id,
+            holiday.id,
+        )
+        return
+
+    # 1. In-app notification (synchronous DB write)
+    NotificationService(session).create_overlap_notification(
+        holiday=holiday,
+        overlapping_holidays=overlapping,
+        manager=manager,
+        requester=requester,
+        business_unit_name=bu_name,
+    )
+
+    # 2. Email notification (async, non-blocking)
+    overlapping_names = []
+    for oh in overlapping:
+        ou = user_service.get_user_by_id(oh.user_id)
+        if ou:
+            overlapping_names.append(ou.display_name)
+
+    background_tasks.add_task(
+        send_overlap_alert_email,
+        manager=manager,
+        requester=requester,
+        holiday=holiday,
+        overlapping_names=overlapping_names,
+        business_unit_name=bu_name,
+    )
 
 
 @router.get("/pending", response_model=List[HolidayReadWithDetails])
@@ -236,6 +323,7 @@ async def check_overlaps(
             "start_date": h.start_date,
             "end_date": h.end_date,
             "title": h.title,
+            "status": h.status.value,
         })
     
     return {

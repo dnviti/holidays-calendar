@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import LanguageSelector from './LanguageSelector';
 import ThemeToggle from './ThemeToggle';
+import NotificationBell from './NotificationBell';
 import {
   Calendar,
   LogOut,
@@ -224,6 +225,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </Box>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <NotificationBell />
           <LanguageSelector />
           <ThemeToggle />
         </Box>
@@ -268,6 +270,7 @@ const Layout = () => {
               <Typography variant="h6" noWrap component="div" sx={{ color: 'text.primary', flexGrow: 1 }}>
                 {window.location.pathname.split('/').pop() || 'Dashboard'}
               </Typography>
+              <NotificationBell />
               <ThemeToggle />
               <LanguageSelector />
             </Toolbar>

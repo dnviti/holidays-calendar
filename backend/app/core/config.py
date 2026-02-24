@@ -47,6 +47,16 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
 
+    # Email / SMTP
+    smtp_enabled: bool = False
+    smtp_host: str = "localhost"
+    smtp_port: int = 587
+    smtp_user: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_address: str = "noreply@holidays-calendar.local"
+    smtp_from_name: str = "Holiday Calendar"
+    smtp_use_tls: bool = True
+
     # Default Admin
     admin_email: str = "admin@example.com"
     admin_password: str = "admin123"

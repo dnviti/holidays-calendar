@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship
 if TYPE_CHECKING:
     from .user import User
     from .business_unit import BusinessUnit
+    from .notification import Notification
 
 
 class HolidayStatus(str, Enum):
@@ -74,7 +75,10 @@ class Holiday(HolidayBase, table=True):
     business_unit: "BusinessUnit" = Relationship(
         sa_relationship=relationship("BusinessUnit", back_populates="holidays")
     )
-    
+    notifications: List["Notification"] = Relationship(
+        sa_relationship=relationship("Notification", back_populates="holiday")
+    )
+
     @property
     def duration_days(self) -> float:
         """Calculate the duration in days."""

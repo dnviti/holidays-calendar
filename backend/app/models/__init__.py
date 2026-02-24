@@ -4,6 +4,7 @@ from .business_unit import BusinessUnit
 from .holiday import Holiday, HolidayStatus
 from .event import Event, EventType, EventVisibility
 from .branding import AppBranding
+from .notification import Notification, NotificationType
 
 __all__ = [
     "User",
@@ -16,4 +17,6 @@ __all__ = [
     "EventType",
     "EventVisibility",
     "AppBranding",
+    "Notification",
+    "NotificationType",
 ]
