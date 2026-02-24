@@ -5,18 +5,20 @@ import api from '../services/api';
 import CalendarView from '../components/CalendarView';
 import { toast } from 'sonner';
 import {
+  deleteHoliday,
+  approveHoliday,
+  rejectHoliday,
+  requestChangeHoliday
+} from '../services/holidayService';
+import {
   Box,
   Typography,
   Grid,
   Card as MuiCard,
   CardContent as MuiCardContent,
-  Button as MuiButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField
+  Button as MuiButton
 } from '@mui/material';
+import LeaveRequestDialog from '../components/LeaveRequestDialog';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -24,16 +26,11 @@ const Dashboard = () => {
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [requestData, setRequestData] = useState({
-    start_date: '',
-    end_date: '',
-    title: '',
-    description: '',
-    business_unit_id: ''
-  });
+  const [businessUnits, setBusinessUnits] = useState([]);
 
   useEffect(() => {
     fetchHolidays();
+    fetchBusinessUnits();
   }, [user]);
 
   const fetchHolidays = async () => {
@@ -47,42 +44,64 @@ const Dashboard = () => {
     }
   };
 
-  const handleRequestSubmit = async (e) => {
-    e.preventDefault();
+  const fetchBusinessUnits = async () => {
     try {
-      // Get the user's first business unit if not selected (simplification for now)
-      let buId = requestData.business_unit_id;
-      if (!buId && user.business_unit_memberships?.length > 0) {
-        // We need to fetch BUs or rely on preloaded data.
-        // For now, let's assume we need to select one.
-        // In a real app we'd have a select in the form.
-      }
+      const response = await api.get('/business-units');
+      setBusinessUnits(response.data);
+    } catch (error) {
+      console.error('Failed to fetch business units:', error);
+    }
+  };
 
-      // Temporary fix: fetch accessible BUs first or let user select
-      const buResponse = await api.get('/business-units');
-      const bus = buResponse.data;
-      if (bus.length > 0 && !buId) {
-        buId = bus[0].id;
-      }
+  const handleCreateHoliday = () => {
+    fetchHolidays();
+  };
 
-      await api.post('/holidays', {
-        ...requestData,
-        business_unit_id: buId
-      });
+  const handleUpdateHoliday = () => {
+    fetchHolidays();
+  };
 
-      toast.success(t('requestLeave.success'));
-      setIsRequestModalOpen(false);
-      setRequestData({
-        start_date: '',
-        end_date: '',
-        title: '',
-        description: '',
-        business_unit_id: ''
-      });
+  const handleDeleteHoliday = async (holidayId) => {
+    try {
+      await deleteHoliday(holidayId);
+      toast.success(t('messages.holidayDeleted'));
       fetchHolidays();
     } catch (error) {
       console.error(error);
-      toast.error(t('requestLeave.error') + ': ' + (error.response?.data?.detail || error.message));
+      toast.error(t('messages.holidayDeleteFailed'));
+    }
+  };
+
+  const handleApproveHoliday = async (holidayId, notes) => {
+    try {
+      await approveHoliday(holidayId, notes);
+      toast.success(t('messages.leaveApproved'));
+      fetchHolidays();
+    } catch (error) {
+      console.error(error);
+      toast.error(t('messages.approveLeaveRequestFailed'));
+    }
+  };
+
+  const handleRejectHoliday = async (holidayId, notes) => {
+    try {
+      await rejectHoliday(holidayId, notes);
+      toast.success(t('messages.leaveRejected'));
+      fetchHolidays();
+    } catch (error) {
+      console.error(error);
+      toast.error(t('messages.rejectLeaveRequestFailed'));
+    }
+  };
+
+  const handleRequestChange = async (holidayId, notes) => {
+    try {
+      await requestChangeHoliday(holidayId, notes);
+      toast.success(t('messages.leaveChangeRequested'));
+      fetchHolidays();
+    } catch (error) {
+      console.error(error);
+      toast.error(t('messages.requestChangeFailed'));
     }
   };
 
@@ -199,85 +218,30 @@ const Dashboard = () => {
       </Grid>
 
       <Box sx={{ flex: 1, minHeight: '600px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <CalendarView events={events} onEventDrop={handleEventDrop} />
+        <CalendarView
+          events={events}
+          onEventDrop={handleEventDrop}
+          onCreateEvent={handleCreateHoliday}
+          onUpdateEvent={handleUpdateHoliday}
+          onDeleteEvent={handleDeleteHoliday}
+          onApproveEvent={handleApproveHoliday}
+          onRejectEvent={handleRejectHoliday}
+          onRequestChange={handleRequestChange}
+          businessUnits={businessUnits}
+          showEventCreation={true}
+        />
       </Box>
 
-      <Dialog
+      <LeaveRequestDialog
         open={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ pb: 1 }}>{t('requestLeave.title')}</DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
-          <Box component="form" onSubmit={handleRequestSubmit} sx={{ mt: 1 }}>
-            <TextField
-              fullWidth
-              label={t('requestLeave.titleLabel')}
-              value={requestData.title}
-              onChange={e => setRequestData({ ...requestData, title: e.target.value })}
-              required
-              placeholder={t('requestLeave.titlePlaceholder')}
-              margin="normal"
-              variant="outlined"
-              sx={{ mb: 2 }}
-            />
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label={t('requestLeave.startDateLabel')}
-                  type="date"
-                  value={requestData.start_date}
-                  onChange={e => setRequestData({ ...requestData, start_date: e.target.value })}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label={t('requestLeave.endDateLabel')}
-                  type="date"
-                  value={requestData.end_date}
-                  onChange={e => setRequestData({ ...requestData, end_date: e.target.value })}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                  variant="outlined"
-                />
-              </Grid>
-            </Grid>
-            <TextField
-              fullWidth
-              label={t('requestLeave.descriptionLabel')}
-              value={requestData.description}
-              onChange={e => setRequestData({ ...requestData, description: e.target.value })}
-              placeholder={t('requestLeave.descriptionPlaceholder')}
-              multiline
-              rows={3}
-              margin="normal"
-              variant="outlined"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 1 }}>
-          <MuiButton
-            onClick={() => setIsRequestModalOpen(false)}
-            variant="outlined"
-            sx={{ borderRadius: 2, px: 3 }}
-          >
-            {t('common:actions.cancel', 'Cancel')}
-          </MuiButton>
-          <MuiButton
-            onClick={handleRequestSubmit}
-            variant="contained"
-            sx={{ borderRadius: 2, px: 3 }}
-          >
-            {t('requestLeave.submitButton')}
-          </MuiButton>
-        </DialogActions>
-      </Dialog>
+        onSuccess={() => {
+          toast.success(t('requestLeave.success'));
+          setIsRequestModalOpen(false);
+          fetchHolidays();
+        }}
+        businessUnits={businessUnits}
+      />
     </Box>
   );
 };

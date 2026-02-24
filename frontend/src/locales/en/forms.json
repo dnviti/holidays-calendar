@@ -69,12 +69,17 @@
     "cancel": "Cancel",
     "submit": "Submit Request",
     "update": "Update Request",
-    "createFailed": "Failed to create leave request"
+    "createFailed": "Failed to create leave request",
+    "updateFailed": "Failed to update leave request"
   },
   "overlapCheck": {
     "checking": "Checking for overlapping holidays...",
     "warningTitle": "Overlap Warning",
-    "warningMessage": "The following team members are also off during this period:"
+    "warningMessage": "The following team members are also off during this period:",
+    "teamAvailability": "Team Availability",
+    "allClear": "No team members are off during this period",
+    "statusApproved": "Approved",
+    "statusPending": "Pending"
   },
   "status": {
     "pending": "Pending Approval",

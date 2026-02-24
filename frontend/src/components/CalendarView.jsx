@@ -6,7 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import CalendarHeader from './CalendarHeader';
 import HolidayDialog from './HolidayDialog';
-import HolidayCreationDialog from './HolidayCreationDialog';
+import LeaveRequestDialog from './LeaveRequestDialog';
 import { Menu, MenuItem, Box, Paper, useTheme } from '@mui/material';
 
 const CalendarView = ({
@@ -31,6 +31,7 @@ const CalendarView = ({
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editData, setEditData] = useState(null);
   const [contextMenu, setContextMenu] = useState({ open: false, x: 0, y: 0, event: null });
 
   // Update title on mount/change
@@ -416,19 +417,26 @@ const CalendarView = ({
         onApprove={onApproveEvent}
         onReject={onRejectEvent}
         onRequestChange={onRequestChange}
+        onEditRequest={(eventData) => {
+          setEditData(eventData);
+          setSelectedEvent(null);
+          setShowCreateDialog(true);
+        }}
         businessUnits={businessUnits}
       />
 
-      {showEventCreation && (
-        <HolidayCreationDialog
-          open={showCreateDialog}
-          onClose={() => setShowCreateDialog(false)}
-          onSuccess={handleCreateEventSuccess}
-          selectedDate={selectedDate}
-          businessUnits={businessUnits}
-          selectedBusinessUnit={selectedBusinessUnit}
-        />
-      )}
+      <LeaveRequestDialog
+        open={showCreateDialog}
+        onClose={() => {
+          setShowCreateDialog(false);
+          setEditData(null);
+        }}
+        onSuccess={editData ? handleUpdateEventSuccess : handleCreateEventSuccess}
+        selectedDate={selectedDate}
+        editData={editData}
+        businessUnits={businessUnits}
+        selectedBusinessUnit={selectedBusinessUnit}
+      />
     </Box>
   );
 };

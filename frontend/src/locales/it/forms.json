@@ -69,12 +69,17 @@
     "cancel": "Annulla",
     "submit": "Invia Richiesta",
     "update": "Aggiorna Richiesta",
-    "createFailed": "Impossibile creare la richiesta di ferie"
+    "createFailed": "Impossibile creare la richiesta di ferie",
+    "updateFailed": "Impossibile aggiornare la richiesta di ferie"
   },
   "overlapCheck": {
     "checking": "Verifica sovrapposizioni ferie in corso...",
     "warningTitle": "Avviso Sovrapposizione",
-    "warningMessage": "I seguenti membri del team sono già assenti durante questo periodo:"
+    "warningMessage": "I seguenti membri del team sono già assenti durante questo periodo:",
+    "teamAvailability": "Disponibilità del Team",
+    "allClear": "Nessun membro del team è assente durante questo periodo",
+    "statusApproved": "Approvata",
+    "statusPending": "In attesa"
   },
   "status": {
     "pending": "In Attesa di Approvazione",

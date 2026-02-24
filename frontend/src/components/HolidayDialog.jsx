@@ -25,13 +25,11 @@ import {
   Close
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import HolidayForm from './HolidayForm';
 import { useAuth } from '../contexts/AuthContext';
 
-const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, onReject, onRequestChange, businessUnits = [] }) => {
+const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, onReject, onRequestChange, onEditRequest, businessUnits = [] }) => {
   const { t } = useTranslation('forms');
   const { user } = useAuth();
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showManagerNotes, setShowManagerNotes] = useState(false);
   const [managerNotes, setManagerNotes] = useState('');
   const [actionType, setActionType] = useState(null); // 'approve', 'reject', 'request_change'
@@ -83,19 +81,21 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
   };
 
   const handleEdit = () => {
-    setShowEditDialog(true);
-  };
-
-  const handleEditSubmit = async (updatedData) => {
-    try {
-      if (onUpdate) {
-        await onUpdate({ id: event.id, ...updatedData });
-      }
-      setShowEditDialog(false);
-      onClose();
-    } catch (error) {
-      console.error('Error updating holiday:', error);
+    const eventData = {
+      id: event.id,
+      title: event.title,
+      description: extendedProps?.description || '',
+      start_date: start ? format(start, 'yyyy-MM-dd') : '',
+      end_date: end ? format(end, 'yyyy-MM-dd') : '',
+      holiday_type: extendedProps?.holidayType || 'vacation',
+      is_half_day: extendedProps?.is_half_day || false,
+      half_day_period: extendedProps?.half_day_period || 'morning',
+      business_unit_id: extendedProps?.business_unit_id || ''
+    };
+    if (onEditRequest) {
+      onEditRequest(eventData);
     }
+    onClose();
   };
 
   const handleDelete = () => {
@@ -146,7 +146,6 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
   const canManage = user && (user.role === 'admin' || user.role === 'manager') && extendedProps?.status === 'pending';
 
   return (
-    <>
       <Dialog
         open={open}
         onClose={onClose}
@@ -357,45 +356,6 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
           )}
         </DialogActions>
       </Dialog>
-
-      {/* Edit Holiday Dialog */}
-      {showEditDialog && (
-        <Dialog
-          open={showEditDialog}
-          onClose={() => setShowEditDialog(false)}
-          maxWidth="sm"
-          fullWidth
-          slotProps={{
-            paper: {
-              sx: {
-                borderRadius: 2
-              }
-            }
-          }}
-        >
-          <DialogTitle sx={{ fontWeight: 600 }}>{t('leaveRequest.editTitle')}</DialogTitle>
-          <Divider />
-          <DialogContent sx={{ pt: 3 }}>
-            <HolidayForm
-              initialData={{
-                id: event.id,
-                title: event.title,
-                description: extendedProps?.description || '',
-                start_date: start ? format(start, 'yyyy-MM-dd') : '',
-                end_date: end ? format(end, 'yyyy-MM-dd') : '',
-                holiday_type: extendedProps?.holidayType || 'vacation',
-                is_half_day: extendedProps?.is_half_day || false,
-                half_day_period: extendedProps?.half_day_period || 'morning',
-                business_unit_id: extendedProps?.business_unit_id || ''
-              }}
-              onSubmit={handleEditSubmit}
-              onCancel={() => setShowEditDialog(false)}
-              businessUnits={businessUnits}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-    </>
   );
 };
 
