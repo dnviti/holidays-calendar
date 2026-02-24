@@ -41,8 +41,8 @@ class BusinessUnit(BusinessUnitBase, table=True):
     microsoft_group_id: Optional[str] = Field(default=None, unique=True, index=True, max_length=255)
     
     # Timestamps
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Relationships
     manager: Optional["User"] = Relationship(

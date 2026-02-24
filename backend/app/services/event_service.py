@@ -115,7 +115,7 @@ class EventService:
             if value is not None:
                 setattr(event, key, value)
 
-        event.updated_at = datetime.utcnow()
+        event.updated_at = datetime.now(timezone.utc)
 
         self.session.commit()
         self.session.refresh(event)

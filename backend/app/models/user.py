@@ -47,8 +47,8 @@ class User(UserBase, table=True):
     hashed_password: Optional[str] = Field(default=None, max_length=255)
     
     # Timestamps
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_login: Optional[datetime] = Field(default=None)
     
     # Relationships
@@ -97,7 +97,7 @@ class UserBusinessUnit(SQLModel, table=True):
     user_id: UUID = Field(foreign_key="user.id", primary_key=True)
     business_unit_id: UUID = Field(foreign_key="businessunit.id", primary_key=True)
     is_manager: bool = Field(default=False)
-    joined_at: datetime = Field(default_factory=datetime.utcnow)
+    joined_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Relationships
     user: "User" = Relationship(

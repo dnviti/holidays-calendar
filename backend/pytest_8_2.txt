@@ -1,0 +1,35 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.12, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\dnvit\Documents\repos\holidays-calendar\backend
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 6 items
+
+tests\test_business_units.py ..                                          [ 33%]
+tests\test_users.py ....                                                 [100%]
+
+============================== warnings summary ===============================
+app\models\sync.py:109
+  C:\Users\dnvit\Documents\repos\holidays-calendar\backend\app\models\sync.py:109: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class SyncLogRead(BaseModel):
+
+tests/test_business_units.py: 8 warnings
+tests/test_users.py: 12 warnings
+  C:\Users\dnvit\Documents\repos\holidays-calendar\backend\venv\Lib\site-packages\pydantic\fields.py:747: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return fac()
+
+tests/test_business_units.py::test_create_business_unit
+tests/test_business_units.py::test_list_business_units
+tests/test_users.py::test_read_users_admin
+tests/test_users.py::test_read_users_unauthorized
+tests/test_users.py::test_create_user
+tests/test_users.py::test_delete_user
+  C:\Users\dnvit\Documents\repos\holidays-calendar\backend\app\core\security.py:35: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    expire = datetime.utcnow() + timedelta(
+
+tests/test_users.py::test_delete_user
+  C:\Users\dnvit\Documents\repos\holidays-calendar\backend\app\services\user_service.py:139: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    user.updated_at = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 6 passed, 28 warnings in 1.83s ========================

@@ -57,7 +57,7 @@ async def update_branding(
             setattr(branding, key, value)
     
     from datetime import datetime
-    branding.updated_at = datetime.utcnow()
+    branding.updated_at = datetime.now(timezone.utc)
     session.commit()
     session.refresh(branding)
     return branding
@@ -109,7 +109,7 @@ async def upload_logo(
         branding.favicon_url = url
     
     from datetime import datetime
-    branding.updated_at = datetime.utcnow()
+    branding.updated_at = datetime.now(timezone.utc)
     session.commit()
     
     return {"url": url, "filename": filename}
@@ -151,7 +151,7 @@ async def delete_logo(
             os.remove(filepath)
     
     from datetime import datetime
-    branding.updated_at = datetime.utcnow()
+    branding.updated_at = datetime.now(timezone.utc)
     session.commit()
 
 

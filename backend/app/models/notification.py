@@ -30,7 +30,7 @@ class Notification(SQLModel, table=True):
     message: str = Field(max_length=2000)
     holiday_id: Optional[UUID] = Field(default=None, foreign_key="holiday.id", index=True)
     is_read: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
     recipient: "User" = Relationship(

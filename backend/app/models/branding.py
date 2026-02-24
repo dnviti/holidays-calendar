@@ -50,8 +50,8 @@ class AppBranding(AppBrandingBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     
     # Timestamps
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class AppBrandingUpdate(SQLModel):

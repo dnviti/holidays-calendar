@@ -124,7 +124,7 @@ class UserService:
             if value is not None:
                 setattr(user, key, value)
         
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(timezone.utc)
         self.session.commit()
         self.session.refresh(user)
         return user
@@ -136,7 +136,7 @@ class UserService:
             return False
         
         user.is_active = False
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(timezone.utc)
         self.session.commit()
         return True
     
@@ -228,7 +228,7 @@ class UserService:
         """Update user's last login timestamp."""
         user = self.session.get(User, user_id)
         if user:
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now(timezone.utc)
             self.session.commit()
     
     def get_or_create_from_microsoft(
@@ -250,7 +250,7 @@ class UserService:
                 user.first_name = first_name
             if last_name:
                 user.last_name = last_name
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now(timezone.utc)
             self.session.commit()
             self.session.refresh(user)
             return user
@@ -260,7 +260,7 @@ class UserService:
         if user:
             # Link Microsoft account
             user.microsoft_id = microsoft_id
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now(timezone.utc)
             self.session.commit()
             self.session.refresh(user)
             return user

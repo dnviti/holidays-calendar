@@ -83,7 +83,7 @@ class BusinessUnitService:
             if value is not None:
                 setattr(bu, key, value)
         
-        bu.updated_at = datetime.utcnow()
+        bu.updated_at = datetime.now(timezone.utc)
         self.session.commit()
         self.session.refresh(bu)
         return bu
@@ -95,7 +95,7 @@ class BusinessUnitService:
             return False
         
         bu.is_active = False
-        bu.updated_at = datetime.utcnow()
+        bu.updated_at = datetime.now(timezone.utc)
         self.session.commit()
         return True
     
@@ -123,7 +123,7 @@ class BusinessUnitService:
             return None
         
         bu.manager_id = manager_id
-        bu.updated_at = datetime.utcnow()
+        bu.updated_at = datetime.now(timezone.utc)
         
         # Ensure manager is a member and has manager flag
         from app.services.user_service import UserService

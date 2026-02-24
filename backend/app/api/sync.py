@@ -225,7 +225,7 @@ async def sync_users(
             )
 
             # Update sync log
-            sync_log.completed_at = datetime.utcnow()
+            sync_log.completed_at = datetime.now(timezone.utc)
             sync_log.status = "completed" if result.success else "failed"
             sync_log.total_items = len(result.details)
             sync_log.created_count = result.created
@@ -251,7 +251,7 @@ async def sync_users(
 
     except Exception as e:
         # Update sync log with failure
-        sync_log.completed_at = datetime.utcnow()
+        sync_log.completed_at = datetime.now(timezone.utc)
         sync_log.status = "failed"
         sync_log.error_details = json.dumps([{"error": str(e)}])
         session.add(sync_log)
@@ -305,7 +305,7 @@ async def sync_groups(
             )
 
             # Update sync log
-            sync_log.completed_at = datetime.utcnow()
+            sync_log.completed_at = datetime.now(timezone.utc)
             sync_log.status = "completed" if result.success else "failed"
             sync_log.total_items = len(result.details)
             sync_log.created_count = result.created
@@ -329,7 +329,7 @@ async def sync_groups(
 
     except Exception as e:
         # Update sync log with failure
-        sync_log.completed_at = datetime.utcnow()
+        sync_log.completed_at = datetime.now(timezone.utc)
         sync_log.status = "failed"
         sync_log.error_details = json.dumps([{"error": str(e)}])
         session.add(sync_log)

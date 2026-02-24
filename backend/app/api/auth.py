@@ -35,10 +35,10 @@ async def login_microsoft():
     
     # Generate state token
     state = secrets.token_urlsafe(32)
-    oauth_states[state] = datetime.utcnow()
+    oauth_states[state] = datetime.now(timezone.utc)
     
     # Clean old states (older than 10 minutes)
-    current_time = datetime.utcnow()
+    current_time = datetime.now(timezone.utc)
     expired_states = [
         s for s, t in oauth_states.items()
         if (current_time - t).total_seconds() > 600

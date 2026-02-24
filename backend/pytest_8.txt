@@ -1,0 +1,14 @@
+﻿.\venv\Scripts\pytest : ImportError while loading 
+conftest 'C:\Users\dnvit\Documents\repos\holidays-calen
+dar\backend\tests\conftest.py'.
+At line:1 char:1
++ .\venv\Scripts\pytest > pytest_output.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ImportEr  
+  ror whi...s\conftest.py'.:String) [], RemoteExcep    
+tion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+tests\conftest.py:7: in <module>
+    from app.main import app
+E   ModuleNotFoundError: No module named 'app'

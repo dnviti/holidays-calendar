@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -84,7 +84,7 @@ class SyncLog(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     sync_type: str = Field(max_length=50)  # "users" or "groups"
     initiated_by_id: UUID = Field(foreign_key="user.id")
-    started_at: datetime = Field(default_factory=datetime.utcnow)
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
     status: str = Field(max_length=20)  # "running", "completed", "failed"
 
@@ -121,8 +121,7 @@ class SyncLogRead(BaseModel):
     deactivated_count: int
     error_count: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SyncStatusResponse(BaseModel):

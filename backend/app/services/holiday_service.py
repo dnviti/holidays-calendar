@@ -158,8 +158,8 @@ class HolidayService:
         holiday.reviewed_by_id = manager.id
         holiday.manager_notes = notes
         from datetime import datetime
-        holiday.reviewed_at = datetime.utcnow()
-        holiday.updated_at = datetime.utcnow()
+        holiday.reviewed_at = datetime.now(timezone.utc)
+        holiday.updated_at = datetime.now(timezone.utc)
         
         self.session.commit()
         self.session.refresh(holiday)
@@ -180,8 +180,8 @@ class HolidayService:
         holiday.reviewed_by_id = manager.id
         holiday.manager_notes = notes
         from datetime import datetime
-        holiday.reviewed_at = datetime.utcnow()
-        holiday.updated_at = datetime.utcnow()
+        holiday.reviewed_at = datetime.now(timezone.utc)
+        holiday.updated_at = datetime.now(timezone.utc)
         
         self.session.commit()
         self.session.refresh(holiday)
@@ -202,8 +202,8 @@ class HolidayService:
         holiday.reviewed_by_id = manager.id
         holiday.manager_notes = notes
         from datetime import datetime
-        holiday.reviewed_at = datetime.utcnow()
-        holiday.updated_at = datetime.utcnow()
+        holiday.reviewed_at = datetime.now(timezone.utc)
+        holiday.updated_at = datetime.now(timezone.utc)
         
         self.session.commit()
         self.session.refresh(holiday)
@@ -248,7 +248,7 @@ class HolidayService:
             holiday.overlap_user_ids = [str(h.user_id) for h in overlaps]
 
         from datetime import datetime
-        holiday.updated_at = datetime.utcnow()
+        holiday.updated_at = datetime.now(timezone.utc)
         
         self.session.commit()
         self.session.refresh(holiday)
@@ -272,7 +272,7 @@ class HolidayService:
             # Mark as cancelled instead of deleting
             holiday.status = HolidayStatus.CANCELLED
             from datetime import datetime
-            holiday.updated_at = datetime.utcnow()
+            holiday.updated_at = datetime.now(timezone.utc)
             self.session.commit()
         else:
             self.session.delete(holiday)

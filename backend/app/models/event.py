@@ -55,8 +55,8 @@ class Event(EventBase, table=True):
     business_unit_id: Optional[UUID] = Field(default=None, foreign_key="businessunit.id")
 
     # Timestamps
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships - using string references to avoid circular imports
     user: "User" = Relationship(sa_relationship=relationship("User", back_populates="events", foreign_keys="[Event.user_id]"))
