@@ -37,8 +37,8 @@ class HolidayService:
         
         if overlaps:
             holiday.has_overlap = True
-            holiday.overlap_user_ids = [h.user_id for h in overlaps]
-        
+            holiday.overlap_user_ids = [str(h.user_id) for h in overlaps]
+
         self.session.add(holiday)
         self.session.commit()
         self.session.refresh(holiday)
@@ -245,8 +245,8 @@ class HolidayService:
                 exclude_holiday_id=holiday.id,
             )
             holiday.has_overlap = len(overlaps) > 0
-            holiday.overlap_user_ids = [h.user_id for h in overlaps]
-        
+            holiday.overlap_user_ids = [str(h.user_id) for h in overlaps]
+
         from datetime import datetime
         holiday.updated_at = datetime.utcnow()
         
