@@ -7,6 +7,11 @@
     "approvedThisYear": "Approved (This Year)",
     "totalHolidays": "Total Holidays"
   },
+  "businessUnit": {
+    "selectPlaceholder": "Select Business Units",
+    "all": "All",
+    "none": "None selected"
+  },
   "requestLeave": {
     "button": "Request Leave",
     "title": "Request Leave",
@@ -22,7 +27,16 @@
   },
   "messages": {
     "holidayUpdated": "Holiday updated",
-    "holidayUpdateFailed": "Failed to update holiday"
+    "holidayUpdateFailed": "Failed to update holiday",
+    "holidayDeleted": "Leave request cancelled",
+    "holidayDeleteFailed": "Failed to cancel leave request",
+    "leaveApproved": "Leave request approved!",
+    "approveLeaveRequestFailed": "Failed to approve leave request",
+    "leaveRejected": "Leave request rejected",
+    "rejectLeaveRequestFailed": "Failed to reject leave request",
+    "leaveChangeRequested": "Change requested",
+    "requestChangeFailed": "Failed to request change",
+    "loadCalendarFailed": "Failed to load calendar data"
   },
   "calendar": {
     "title": "Calendar",

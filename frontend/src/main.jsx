@@ -7,6 +7,7 @@ import { CssBaseline } from '@mui/material';
 import { itIT, enUS } from '@mui/material/locale';
 import { useTranslation } from 'react-i18next';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { createAppTheme } from './theme/muiTheme';
@@ -38,9 +39,11 @@ const ThemedApp = () => {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ThemeProvider>
-        <ThemedApp />
-      </ThemeProvider>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <ThemedApp />
+        </ThemeProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   </React.StrictMode>
 );

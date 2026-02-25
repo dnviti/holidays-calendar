@@ -39,8 +39,23 @@ const NotificationBell = () => {
 
   useEffect(() => {
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
+    let interval = setInterval(fetchUnreadCount, POLL_INTERVAL_MS);
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        clearInterval(interval);
+        interval = null;
+      } else {
+        fetchUnreadCount();
+        interval = setInterval(fetchUnreadCount, POLL_INTERVAL_MS);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [fetchUnreadCount]);
 
   const handleOpen = async (event) => {

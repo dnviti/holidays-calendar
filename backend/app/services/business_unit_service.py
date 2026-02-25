@@ -1,7 +1,7 @@
 """
 Business Unit service for managing business units.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import UUID
 from sqlmodel import Session, select, func

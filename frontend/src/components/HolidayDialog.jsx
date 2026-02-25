@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -13,7 +13,8 @@ import {
   TextField,
   Divider,
   Alert,
-  IconButton
+  IconButton,
+  Skeleton
 } from '@mui/material';
 import {
   CalendarToday,
@@ -26,6 +27,8 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { checkOverlaps } from '../services/holidayService';
+import OverlapHeatmap from './OverlapHeatmap';
 
 const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, onReject, onRequestChange, onEditRequest, businessUnits = [] }) => {
   const { t } = useTranslation('forms');
@@ -33,6 +36,32 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
   const [showManagerNotes, setShowManagerNotes] = useState(false);
   const [managerNotes, setManagerNotes] = useState('');
   const [actionType, setActionType] = useState(null); // 'approve', 'reject', 'request_change'
+  const [overlapData, setOverlapData] = useState(null);
+  const [loadingOverlaps, setLoadingOverlaps] = useState(false);
+
+  // Fetch overlap details when dialog opens for an event with overlaps
+  useEffect(() => {
+    if (!open || !event) {
+      setOverlapData(null);
+      return;
+    }
+
+    const ep = event.extendedProps;
+    if (!ep?.has_overlap || !ep?.business_unit_id || !event.start) return;
+
+    let cancelled = false;
+    setLoadingOverlaps(true);
+
+    const startStr = format(event.start, 'yyyy-MM-dd');
+    const endStr = format(event.end || event.start, 'yyyy-MM-dd');
+
+    checkOverlaps(ep.business_unit_id, startStr, endStr, event.id)
+      .then((data) => { if (!cancelled) setOverlapData(data); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoadingOverlaps(false); });
+
+    return () => { cancelled = true; };
+  }, [open, event]);
 
   if (!event) return null;
 
@@ -234,14 +263,50 @@ const HolidayDialog = ({ open, onClose, event, onUpdate, onDelete, onApprove, on
               )}
 
               {extendedProps?.has_overlap && (
-                <Alert severity="warning" icon={<Warning />}>
-                  <Typography variant="body2" fontWeight={500}>
-                    {t('dialog.teamOverlap')}
-                  </Typography>
-                  <Typography variant="caption">
-                    {t('dialog.teamOverlapMessage')}
-                  </Typography>
-                </Alert>
+                <Box
+                  sx={{
+                    border: '1px solid',
+                    borderColor: 'warning.main',
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      px: 2,
+                      py: 0.75,
+                      bgcolor: 'warning.main',
+                      color: 'warning.contrastText',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <Warning sx={{ fontSize: 16 }} />
+                    <Typography variant="caption" fontWeight="bold">
+                      {t('dialog.teamOverlap')}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ p: 1.5 }}>
+                    {loadingOverlaps ? (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 1 }} />
+                        <Skeleton variant="text" width="50%" />
+                      </Box>
+                    ) : overlapData?.has_overlaps ? (
+                      <OverlapHeatmap
+                        overlaps={overlapData}
+                        startDate={format(start, 'yyyy-MM-dd')}
+                        endDate={format(end, 'yyyy-MM-dd')}
+                        compact
+                      />
+                    ) : (
+                      <Typography variant="caption" color="text.secondary">
+                        {t('dialog.teamOverlapMessage')}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
               )}
 
               {extendedProps?.manager_notes && (

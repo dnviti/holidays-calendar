@@ -7,7 +7,6 @@ import LanguageSelector from './LanguageSelector';
 import ThemeToggle from './ThemeToggle';
 import NotificationBell from './NotificationBell';
 import {
-  Calendar,
   LogOut,
   Settings,
   Users,
@@ -48,7 +47,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const navItems = [
     { to: '/', icon: <Briefcase size={20} />, text: t('navigation.dashboard') },
-    { to: '/calendar', icon: <Calendar size={20} />, text: t('navigation.calendar') },
   ];
 
   const managerItems = [

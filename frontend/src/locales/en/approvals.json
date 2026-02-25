@@ -14,6 +14,7 @@
   "loading": "Loading...",
   "days": "days",
   "overlapWarning": "Warning: Overlaps with {{users}}",
+  "overlapsCount": "{{count}} overlaps",
   "confirmApprove": {
     "title": "Approve Leave Request",
     "message": "Are you sure you want to approve this leave request for {{name}}?",

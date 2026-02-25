@@ -13,9 +13,13 @@ import {
   Button,
   Grid,
   Stack,
-  Alert
+  Alert,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
-import { Check, Clear } from '@mui/icons-material';
+import { Check, Clear, ExpandMore } from '@mui/icons-material';
+import { OverlapHeatmapLoader } from '../components/OverlapHeatmap';
 
 const Approvals = () => {
   const { t } = useTranslation('approvals');
@@ -102,12 +106,43 @@ const Approvals = () => {
 
                           {/* Overlap Warning */}
                           {request.has_overlap && (
-                            <Alert
-                              severity="warning"
-                              sx={{ mt: 1, alignItems: 'center' }}
+                            <Accordion
+                              disableGutters
+                              elevation={0}
+                              sx={{
+                                mt: 1,
+                                border: '1px solid',
+                                borderColor: 'warning.main',
+                                borderRadius: '4px !important',
+                                '&::before': { display: 'none' },
+                                overflow: 'hidden',
+                              }}
                             >
-                              ⚠ {t('overlapWarning', { users: request.overlapping_users.join(', ') })}
-                            </Alert>
+                              <AccordionSummary
+                                expandIcon={<ExpandMore sx={{ color: 'warning.main' }} />}
+                                sx={{
+                                  minHeight: 36,
+                                  py: 0,
+                                  px: 1.5,
+                                  '& .MuiAccordionSummary-content': { my: 0.5 },
+                                }}
+                              >
+                                <Chip
+                                  label={t('overlapsCount', { count: request.overlapping_users.length })}
+                                  color="warning"
+                                  size="small"
+                                  sx={{ fontWeight: 600, fontSize: 11 }}
+                                />
+                              </AccordionSummary>
+                              <AccordionDetails sx={{ p: 1.5, pt: 0 }}>
+                                <OverlapHeatmapLoader
+                                  businessUnitId={request.business_unit_id}
+                                  startDate={request.start_date}
+                                  endDate={request.end_date}
+                                  excludeHolidayId={request.id}
+                                />
+                              </AccordionDetails>
+                            </Accordion>
                           )}
                         </Box>
                       </Stack>

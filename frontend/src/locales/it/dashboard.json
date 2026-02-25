@@ -7,6 +7,11 @@
     "approvedThisYear": "Approvate (Quest'Anno)",
     "totalHolidays": "Totale Ferie"
   },
+  "businessUnit": {
+    "selectPlaceholder": "Seleziona Unità Aziendali",
+    "all": "Tutte",
+    "none": "Nessuna selezionata"
+  },
   "requestLeave": {
     "button": "Richiedi Ferie",
     "title": "Richiedi Ferie",
@@ -22,7 +27,16 @@
   },
   "messages": {
     "holidayUpdated": "Ferie aggiornate",
-    "holidayUpdateFailed": "Impossibile aggiornare le ferie"
+    "holidayUpdateFailed": "Impossibile aggiornare le ferie",
+    "holidayDeleted": "Richiesta di ferie annullata",
+    "holidayDeleteFailed": "Impossibile annullare la richiesta",
+    "leaveApproved": "Richiesta di ferie approvata!",
+    "approveLeaveRequestFailed": "Impossibile approvare la richiesta",
+    "leaveRejected": "Richiesta di ferie rifiutata",
+    "rejectLeaveRequestFailed": "Impossibile rifiutare la richiesta",
+    "leaveChangeRequested": "Richiesta di modifica inviata",
+    "requestChangeFailed": "Impossibile richiedere la modifica",
+    "loadCalendarFailed": "Impossibile caricare i dati del calendario"
   },
   "calendar": {
     "title": "Calendario",

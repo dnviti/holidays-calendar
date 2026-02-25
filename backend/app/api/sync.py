@@ -1,6 +1,7 @@
 """Microsoft 365 sync API endpoints."""
 import json
-from datetime import datetime
+import logging
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
@@ -21,6 +22,8 @@ from app.models.sync import (
 from app.models.user import User
 from app.services.auth_service import microsoft_auth_service
 from app.services.microsoft_sync_service import MicrosoftSyncService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sync", tags=["Microsoft Sync"])
 
@@ -77,8 +80,9 @@ async def get_consent_url(
     try:
         consent_url = microsoft_auth_service.get_admin_consent_url()
         return {"consent_url": consent_url}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("Error generating consent URL")
+        raise HTTPException(status_code=500, detail="Failed to generate consent URL")
 
 
 @router.get("/microsoft/users", response_model=List[MicrosoftUser])
@@ -127,8 +131,9 @@ async def list_microsoft_users(
             # Apply pagination
             return users[skip : skip + limit]
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching users: {str(e)}")
+    except Exception:
+        logger.exception("Error fetching Microsoft users")
+        raise HTTPException(status_code=500, detail="Error fetching users from Microsoft 365")
 
 
 @router.get("/microsoft/groups", response_model=List[MicrosoftGroup])
@@ -177,8 +182,9 @@ async def list_microsoft_groups(
             # Apply pagination
             return groups[skip : skip + limit]
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching groups: {str(e)}")
+    except Exception:
+        logger.exception("Error fetching Microsoft groups")
+        raise HTTPException(status_code=500, detail="Error fetching groups from Microsoft 365")
 
 
 @router.post("/users", response_model=SyncResult)
@@ -251,13 +257,14 @@ async def sync_users(
 
     except Exception as e:
         # Update sync log with failure
+        logger.exception("User sync failed")
         sync_log.completed_at = datetime.now(timezone.utc)
         sync_log.status = "failed"
         sync_log.error_details = json.dumps([{"error": str(e)}])
         session.add(sync_log)
         session.commit()
 
-        raise HTTPException(status_code=500, detail=f"Sync failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="User sync failed")
 
 
 @router.post("/groups", response_model=SyncResult)
@@ -329,13 +336,14 @@ async def sync_groups(
 
     except Exception as e:
         # Update sync log with failure
+        logger.exception("Group sync failed")
         sync_log.completed_at = datetime.now(timezone.utc)
         sync_log.status = "failed"
         sync_log.error_details = json.dumps([{"error": str(e)}])
         session.add(sync_log)
         session.commit()
 
-        raise HTTPException(status_code=500, detail=f"Sync failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Group sync failed")
 
 
 @router.get("/history", response_model=List[SyncLogRead])

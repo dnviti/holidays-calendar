@@ -1,6 +1,8 @@
 """
 Branding management API endpoints.
 """
+import re
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
@@ -21,6 +23,11 @@ router = APIRouter(prefix="/branding", tags=["Branding"])
 # Upload directory for logos
 UPLOAD_DIR = Path("uploads/branding")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+# Upload constraints
+MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "svg", "ico"}
+HEX_COLOR_RE = re.compile(r'^#[0-9a-fA-F]{6}$')
 
 
 def get_or_create_branding(session: Session) -> AppBranding:
@@ -56,7 +63,6 @@ async def update_branding(
         if value is not None:
             setattr(branding, key, value)
     
-    from datetime import datetime
     branding.updated_at = datetime.now(timezone.utc)
     session.commit()
     session.refresh(branding)
@@ -87,14 +93,28 @@ async def upload_logo(
             detail=f"Invalid logo type. Allowed: {', '.join(valid_types)}"
         )
     
-    # Generate filename
-    extension = file.filename.split(".")[-1] if "." in file.filename else "png"
+    # Sanitize file extension
+    raw_ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    extension = raw_ext if raw_ext in ALLOWED_EXTENSIONS else "png"
+
     filename = f"logo_{logo_type}.{extension}"
-    filepath = UPLOAD_DIR / filename
-    
+    filepath = (UPLOAD_DIR / filename).resolve()
+    if not str(filepath).startswith(str(UPLOAD_DIR.resolve())):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid filename"
+        )
+
+    # Read file with size limit
+    content = await file.read(MAX_UPLOAD_SIZE + 1)
+    if len(content) > MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File too large. Maximum size is {MAX_UPLOAD_SIZE // (1024 * 1024)}MB"
+        )
+
     # Save file
     async with aiofiles.open(filepath, "wb") as f:
-        content = await file.read()
         await f.write(content)
     
     # Update branding with URL
@@ -108,7 +128,6 @@ async def upload_logo(
     else:  # favicon
         branding.favicon_url = url
     
-    from datetime import datetime
     branding.updated_at = datetime.now(timezone.utc)
     session.commit()
     
@@ -150,7 +169,6 @@ async def delete_logo(
         if filepath.exists():
             os.remove(filepath)
     
-    from datetime import datetime
     branding.updated_at = datetime.now(timezone.utc)
     session.commit()
 
@@ -162,20 +180,23 @@ async def get_branding_css(
     """Get CSS variables for branding (public endpoint)."""
     branding = get_or_create_branding(session)
     
+    def safe_color(value: str, default: str = "#000000") -> str:
+        return value if HEX_COLOR_RE.match(value) else default
+
     css = f"""
 :root {{
-    --primary-color: {branding.primary_color};
-    --secondary-color: {branding.secondary_color};
-    --accent-color: {branding.accent_color};
-    --success-color: {branding.success_color};
-    --warning-color: {branding.warning_color};
-    --danger-color: {branding.danger_color};
-    --info-color: {branding.info_color};
-    --background-color: {branding.background_color};
-    --surface-color: {branding.surface_color};
-    --card-color: {branding.card_color};
-    --text-primary-color: {branding.text_primary_color};
-    --text-secondary-color: {branding.text_secondary_color};
+    --primary-color: {safe_color(branding.primary_color)};
+    --secondary-color: {safe_color(branding.secondary_color)};
+    --accent-color: {safe_color(branding.accent_color)};
+    --success-color: {safe_color(branding.success_color)};
+    --warning-color: {safe_color(branding.warning_color)};
+    --danger-color: {safe_color(branding.danger_color)};
+    --info-color: {safe_color(branding.info_color)};
+    --background-color: {safe_color(branding.background_color)};
+    --surface-color: {safe_color(branding.surface_color)};
+    --card-color: {safe_color(branding.card_color)};
+    --text-primary-color: {safe_color(branding.text_primary_color)};
+    --text-secondary-color: {safe_color(branding.text_secondary_color)};
 }}
 """
     

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -14,6 +14,12 @@ const LeaveRequestDialog = ({ open, onClose, onSuccess, selectedDate, editData =
   const { t } = useTranslation('forms');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setError('');
+    }
+  }, [open]);
 
   const isEditMode = !!editData?.id;
 
@@ -40,7 +46,9 @@ const LeaveRequestDialog = ({ open, onClose, onSuccess, selectedDate, editData =
   const formInitialData = isEditMode
     ? editData
     : selectedDate
-      ? { start_date: selectedDate, end_date: selectedDate }
+      ? (typeof selectedDate === 'string'
+        ? { start_date: selectedDate, end_date: selectedDate }
+        : { start_date: selectedDate.start, end_date: selectedDate.end })
       : null;
 
   return (
@@ -71,7 +79,7 @@ const LeaveRequestDialog = ({ open, onClose, onSuccess, selectedDate, editData =
         )}
 
         <HolidayForm
-          key={editData?.id || 'create'}
+          key={editData?.id ? `edit-${editData.id}` : `create-${selectedDate?.start}-${selectedDate?.end}`}
           initialData={formInitialData}
           onSubmit={handleSubmit}
           onCancel={onClose}

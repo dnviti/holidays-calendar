@@ -1,15 +1,16 @@
 """
 Event management API endpoints.
 """
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.core.database import get_session
 from app.core.deps import get_current_user
 from app.models.user import User
+from app.models.business_unit import BusinessUnit
 from app.models.event import (
     Event,
     EventCreate,
@@ -28,24 +29,47 @@ from app.services.business_unit_service import BusinessUnitService
 router = APIRouter(prefix="/events", tags=["Events"])
 
 
+def enrich_events_batch(
+    events: List[Event],
+    session: Session,
+) -> List[EventReadWithDetails]:
+    """Batch-enrich events to avoid N+1 queries."""
+    if not events:
+        return []
+
+    user_ids = {e.user_id for e in events}
+    bu_ids = {e.business_unit_id for e in events if e.business_unit_id}
+
+    users_map = {
+        u.id: u
+        for u in session.exec(select(User).where(User.id.in_(list(user_ids)))).all()
+    } if user_ids else {}
+
+    bus_map = {
+        b.id: b
+        for b in session.exec(select(BusinessUnit).where(BusinessUnit.id.in_(list(bu_ids)))).all()
+    } if bu_ids else {}
+
+    results = []
+    for event in events:
+        user = users_map.get(event.user_id)
+        bu = bus_map.get(event.business_unit_id) if event.business_unit_id else None
+        results.append(EventReadWithDetails(
+            **event.model_dump(),
+            duration_days=event.duration_days,
+            user_name=user.display_name if user else "Unknown",
+            user_avatar=user.avatar_url if user else None,
+            business_unit_name=bu.name if bu else None,
+        ))
+    return results
+
+
 def enrich_event_details(
     event: Event,
     session: Session,
 ) -> EventReadWithDetails:
-    """Add user and business unit details to event."""
-    user_service = UserService(session)
-    bu_service = BusinessUnitService(session)
-
-    user = user_service.get_user_by_id(event.user_id)
-    bu = bu_service.get_business_unit_by_id(event.business_unit_id) if event.business_unit_id else None
-
-    return EventReadWithDetails(
-        **event.model_dump(),
-        duration_days=event.duration_days,
-        user_name=user.display_name if user else "Unknown",
-        user_avatar=user.avatar_url if user else None,
-        business_unit_name=bu.name if bu else None,
-    )
+    """Add user and business unit details to a single event."""
+    return enrich_events_batch([event], session)[0]
 
 
 @router.get("", response_model=List[EventReadWithDetails])
@@ -89,7 +113,7 @@ async def list_events(
             user_id=current_user.id,
         )
 
-    return [enrich_event_details(e, session) for e in events]
+    return enrich_events_batch(events, session)
 
 
 @router.post("", response_model=EventReadWithDetails, status_code=status.HTTP_201_CREATED)
@@ -148,13 +172,27 @@ async def get_calendar_events(
         end_date=end_date,
     )
 
-    user_service = UserService(session)
-    bu_service = BusinessUnitService(session)
+    if not events:
+        return []
+
+    # Batch-fetch users and BUs
+    user_ids = {e.user_id for e in events}
+    bu_ids = {e.business_unit_id for e in events if e.business_unit_id}
+
+    users_map = {
+        u.id: u
+        for u in session.exec(select(User).where(User.id.in_(list(user_ids)))).all()
+    } if user_ids else {}
+
+    bus_map = {
+        b.id: b
+        for b in session.exec(select(BusinessUnit).where(BusinessUnit.id.in_(list(bu_ids)))).all()
+    } if bu_ids else {}
 
     calendar_events = []
     for e in events:
-        user = user_service.get_user_by_id(e.user_id)
-        bu = bu_service.get_business_unit_by_id(e.business_unit_id) if e.business_unit_id else None
+        user = users_map.get(e.user_id)
+        bu = bus_map.get(e.business_unit_id) if e.business_unit_id else None
 
         # Create datetime objects for calendar
         start_datetime = e.start_date
@@ -162,11 +200,8 @@ async def get_calendar_events(
 
         # If times are provided, create datetime objects
         if e.start_time and e.end_time:
-            from datetime import datetime, time
-            start_time = datetime.combine(e.start_date, datetime.strptime(e.start_time, "%H:%M").time())
-            end_time = datetime.combine(e.end_date, datetime.strptime(e.end_time, "%H:%M").time())
-            start_datetime = start_time
-            end_datetime = end_time
+            start_datetime = datetime.combine(e.start_date, datetime.strptime(e.start_time, "%H:%M").time())
+            end_datetime = datetime.combine(e.end_date, datetime.strptime(e.end_time, "%H:%M").time())
 
         # Determine color based on event type and business unit
         color = e.color

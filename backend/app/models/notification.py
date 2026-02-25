@@ -2,7 +2,7 @@
 In-app notification model for BU manager overlap alerts.
 """
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4

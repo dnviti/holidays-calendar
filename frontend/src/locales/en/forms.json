@@ -79,7 +79,13 @@
     "teamAvailability": "Team Availability",
     "allClear": "No team members are off during this period",
     "statusApproved": "Approved",
-    "statusPending": "Pending"
+    "statusPending": "Pending",
+    "legend0": "No absences",
+    "legend1": "1 person",
+    "legend2": "2 people",
+    "legend3": "3+ people",
+    "daysOverlap": "{{count}} days overlap",
+    "noAbsences": "No absences this day"
   },
   "status": {
     "pending": "Pending Approval",

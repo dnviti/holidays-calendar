@@ -14,6 +14,7 @@
   "loading": "Caricamento...",
   "days": "giorni",
   "overlapWarning": "Attenzione: Sovrapposizione con {{users}}",
+  "overlapsCount": "{{count}} sovrapposizioni",
   "confirmApprove": {
     "title": "Approva Richiesta Ferie",
     "message": "Sei sicuro di voler approvare questa richiesta di ferie per {{name}}?",

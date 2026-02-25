@@ -24,6 +24,7 @@ from app.models.holiday import (
     HolidayStatusUpdate,
 )
 from app.models.user import UserBusinessUnit
+from app.models.business_unit import BusinessUnit
 from app.services.holiday_service import HolidayService
 from app.services.user_service import UserService
 from app.services.business_unit_service import BusinessUnitService
@@ -34,32 +35,76 @@ from app.services.email_service import send_overlap_alert_email
 router = APIRouter(prefix="/holidays", tags=["Holidays"])
 
 
+def _build_lookup_maps(
+    holidays: List[Holiday],
+    session: Session,
+) -> tuple[dict, dict]:
+    """Batch-fetch all users and BUs referenced by holidays (2 queries total)."""
+    user_ids = set()
+    bu_ids = set()
+    for h in holidays:
+        user_ids.add(h.user_id)
+        bu_ids.add(h.business_unit_id)
+        if h.overlap_user_ids:
+            for uid in h.overlap_user_ids:
+                user_ids.add(UUID(uid) if isinstance(uid, str) else uid)
+
+    users_map: dict = {}
+    if user_ids:
+        users_map = {
+            u.id: u
+            for u in session.exec(select(User).where(User.id.in_(list(user_ids)))).all()
+        }
+
+    bus_map: dict = {}
+    if bu_ids:
+        bus_map = {
+            b.id: b
+            for b in session.exec(select(BusinessUnit).where(BusinessUnit.id.in_(list(bu_ids)))).all()
+        }
+
+    return users_map, bus_map
+
+
+def enrich_holidays_batch(
+    holidays: List[Holiday],
+    session: Session,
+) -> List[HolidayReadWithDetails]:
+    """Batch-enrich holidays to avoid N+1 queries."""
+    if not holidays:
+        return []
+
+    users_map, bus_map = _build_lookup_maps(holidays, session)
+
+    results = []
+    for h in holidays:
+        user = users_map.get(h.user_id)
+        bu = bus_map.get(h.business_unit_id)
+        overlapping_users = []
+        if h.overlap_user_ids:
+            for uid in h.overlap_user_ids:
+                uid_key = UUID(uid) if isinstance(uid, str) else uid
+                overlap_user = users_map.get(uid_key)
+                if overlap_user:
+                    overlapping_users.append(overlap_user.display_name)
+
+        results.append(HolidayReadWithDetails(
+            **h.model_dump(),
+            duration_days=h.duration_days,
+            user_name=user.display_name if user else "Unknown",
+            user_avatar=user.avatar_url if user else None,
+            business_unit_name=bu.name if bu else "Unknown",
+            overlapping_users=overlapping_users,
+        ))
+    return results
+
+
 def enrich_holiday_details(
     holiday: Holiday,
     session: Session,
 ) -> HolidayReadWithDetails:
-    """Add user and business unit details to holiday."""
-    user_service = UserService(session)
-    bu_service = BusinessUnitService(session)
-    
-    user = user_service.get_user_by_id(holiday.user_id)
-    bu = bu_service.get_business_unit_by_id(holiday.business_unit_id)
-    
-    overlapping_users = []
-    if holiday.overlap_user_ids:
-        for uid in holiday.overlap_user_ids:
-            overlap_user = user_service.get_user_by_id(uid)
-            if overlap_user:
-                overlapping_users.append(overlap_user.display_name)
-    
-    return HolidayReadWithDetails(
-        **holiday.model_dump(),
-        duration_days=holiday.duration_days,
-        user_name=user.display_name if user else "Unknown",
-        user_avatar=user.avatar_url if user else None,
-        business_unit_name=bu.name if bu else "Unknown",
-        overlapping_users=overlapping_users,
-    )
+    """Add user and business unit details to a single holiday."""
+    return enrich_holidays_batch([holiday], session)[0]
 
 
 @router.get("", response_model=List[HolidayReadWithDetails])
@@ -109,7 +154,7 @@ async def list_holidays(
             year=year,
         )
     
-    return [enrich_holiday_details(h, session) for h in holidays]
+    return enrich_holidays_batch(holidays, session)
 
 
 @router.post("", response_model=HolidayReadWithDetails, status_code=status.HTTP_201_CREATED)
@@ -232,7 +277,7 @@ async def get_pending_approvals(
     holiday_service = HolidayService(session)
     holidays = holiday_service.get_pending_approvals(current_user, business_unit_id)
     
-    return [enrich_holiday_details(h, session) for h in holidays]
+    return enrich_holidays_batch(holidays, session)
 
 
 @router.get("/calendar", response_model=List[HolidayCalendarEvent])
@@ -259,13 +304,17 @@ async def get_calendar_events(
         start_date=start_date,
         end_date=end_date,
     )
-    
-    user_service = UserService(session)
-    bu = bu_service.get_business_unit_by_id(business_unit_id)
-    
+
+    if not holidays:
+        return []
+
+    # Batch-fetch users and BU
+    users_map, bus_map = _build_lookup_maps(holidays, session)
+    bu = bus_map.get(business_unit_id)
+
     events = []
     for h in holidays:
-        user = user_service.get_user_by_id(h.user_id)
+        user = users_map.get(h.user_id)
 
         # Determine color based on status and business unit
         color = bu.primary_color if bu else "#3B82F6"
@@ -289,7 +338,7 @@ async def get_calendar_events(
             has_overlap=h.has_overlap,
             color=color,
         ))
-    
+
     return events
 
 
@@ -312,10 +361,18 @@ async def check_overlaps(
         exclude_holiday_id=exclude_holiday_id,
     )
     
-    user_service = UserService(session)
+    # Batch-fetch users for overlaps
+    user_ids = {h.user_id for h in overlaps}
+    users_map = {}
+    if user_ids:
+        users_map = {
+            u.id: u
+            for u in session.exec(select(User).where(User.id.in_(list(user_ids)))).all()
+        }
+
     result = []
     for h in overlaps:
-        user = user_service.get_user_by_id(h.user_id)
+        user = users_map.get(h.user_id)
         result.append({
             "id": h.id,
             "user_id": h.user_id,
@@ -325,7 +382,7 @@ async def check_overlaps(
             "title": h.title,
             "status": h.status.value,
         })
-    
+
     return {
         "has_overlaps": len(result) > 0,
         "overlapping_holidays": result,

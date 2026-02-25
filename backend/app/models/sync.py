@@ -1,5 +1,5 @@
 """Sync models for Microsoft 365 integration."""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import UUID, uuid4
 

@@ -78,9 +78,33 @@ const CalendarView = ({
   };
 
   const handleDateSelect = (selectInfo) => {
-    // Convert the selected date to a string in YYYY-MM-DD format
-    const startDate = selectInfo.start.toISOString().split('T')[0];
-    setSelectedDate(startDate);
+    let startDate = '';
+    let endDate = '';
+
+    if (selectInfo.startStr) {
+      // It's a select event
+      startDate = selectInfo.startStr.split('T')[0];
+
+      if (selectInfo.allDay) {
+        // FullCalendar's end is exclusive for all-day selections
+        // Parse as local date parts to avoid UTC timezone shift
+        const [y, m, d] = (selectInfo.endStr || selectInfo.startStr).split('T')[0].split('-').map(Number);
+        const endObj = new Date(y, m - 1, d - 1);
+        endDate = `${endObj.getFullYear()}-${String(endObj.getMonth() + 1).padStart(2, '0')}-${String(endObj.getDate()).padStart(2, '0')}`;
+
+        if (endDate < startDate) {
+          endDate = startDate;
+        }
+      } else {
+        endDate = (selectInfo.endStr || selectInfo.startStr).split('T')[0];
+      }
+    } else if (selectInfo.dateStr) {
+      // It's a dateClick event
+      startDate = selectInfo.dateStr.split('T')[0];
+      endDate = startDate;
+    }
+
+    setSelectedDate({ start: startDate, end: endDate });
 
     // Show the event creation dialog if creation is enabled
     if (showEventCreation) {
@@ -103,7 +127,7 @@ const CalendarView = ({
       x: selectInfo.jsEvent.clientX,
       y: selectInfo.jsEvent.clientY,
       event: null,
-      date: selectInfo.start
+      dateStr: selectInfo.startStr || selectInfo.dateStr
     });
   };
 
@@ -117,7 +141,7 @@ const CalendarView = ({
       x: clickInfo.jsEvent.clientX,
       y: clickInfo.jsEvent.clientY,
       event: clickInfo.event,
-      date: null
+      dateStr: null
     });
   };
 
@@ -126,7 +150,7 @@ const CalendarView = ({
 
     if (contextMenu.event) {
       // Action on existing event
-      switch(action) {
+      switch (action) {
         case 'edit':
           setSelectedEvent(contextMenu.event);
           break;
@@ -149,12 +173,11 @@ const CalendarView = ({
         default:
           break;
       }
-    } else if (contextMenu.date) {
+    } else if (contextMenu.dateStr) {
       // Action on date (create new event)
-      switch(action) {
+      switch (action) {
         case 'create':
-          const startDate = contextMenu.date.toISOString().split('T')[0];
-          setSelectedDate(startDate);
+          setSelectedDate({ start: contextMenu.dateStr, end: contextMenu.dateStr });
           setShowCreateDialog(true);
           break;
         default:
@@ -217,13 +240,12 @@ const CalendarView = ({
           }
 
           if (dateStr) {
-            const date = new Date(dateStr);
             setContextMenu({
               open: true,
               x: e.clientX,
               y: e.clientY,
               event: null,
-              date: date
+              dateStr: dateStr
             });
           }
         }
@@ -287,7 +309,6 @@ const CalendarView = ({
             weekends={true}
             events={events}
             select={handleDateSelect}
-            dateClick={handleDateSelect}
             eventClick={handleEventClick}
             eventDrop={onEventDrop}
             eventResize={handleEventResize}
@@ -342,8 +363,8 @@ const CalendarView = ({
                       sx={{ fontSize: '0.75rem' }}
                       title={
                         isPending ? "Pending approval" :
-                        isRejected ? "Rejected" :
-                        "Change requested"
+                          isRejected ? "Rejected" :
+                            "Change requested"
                       }
                     >
                       {isPending && '⏳'}
@@ -358,11 +379,34 @@ const CalendarView = ({
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       fontWeight: 500,
-                      color: 'white'
+                      color: 'white',
+                      flex: 1,
+                      minWidth: 0,
                     }}
                   >
                     {eventInfo.event.title}
                   </Box>
+                  {eventInfo.event.extendedProps?.has_overlap && (
+                    <Box
+                      component="span"
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        bgcolor: 'warning.main',
+                        color: 'warning.contrastText',
+                        fontSize: '0.6rem',
+                        fontWeight: 'bold',
+                        flexShrink: 0,
+                      }}
+                      title="Has overlapping leave requests"
+                    >
+                      !
+                    </Box>
+                  )}
                 </Box>
               );
             }}

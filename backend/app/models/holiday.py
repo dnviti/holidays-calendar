@@ -2,7 +2,7 @@
 Holiday/Leave request model with overlap detection support.
 """
 from __future__ import annotations
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
 from uuid import UUID, uuid4

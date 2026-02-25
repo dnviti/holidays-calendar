@@ -1,11 +1,12 @@
 """
 Authentication API endpoints.
 """
-from datetime import datetime
-import secrets
+import logging
+from datetime import datetime, timedelta, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
+from jose import JWTError, jwt
 from sqlmodel import Session
 
 from fastapi.security import OAuth2PasswordRequestForm
@@ -18,10 +19,30 @@ from app.services.auth_service import microsoft_auth_service
 from app.services.user_service import UserService
 
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# Store for OAuth state tokens (in production, use Redis or similar)
-oauth_states: dict[str, datetime] = {}
+OAUTH_STATE_EXPIRY_MINUTES = 10
+
+
+def _create_oauth_state() -> str:
+    """Create a signed JWT state token for OAuth2 CSRF protection."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=OAUTH_STATE_EXPIRY_MINUTES)
+    return jwt.encode(
+        {"purpose": "oauth_state", "exp": expire},
+        settings.secret_key,
+        algorithm=settings.algorithm,
+    )
+
+
+def _verify_oauth_state(state: str) -> bool:
+    """Verify a signed JWT state token."""
+    try:
+        payload = jwt.decode(state, settings.secret_key, algorithms=[settings.algorithm])
+        return payload.get("purpose") == "oauth_state"
+    except JWTError:
+        return False
 
 
 @router.get("/login")
@@ -32,20 +53,8 @@ async def login_microsoft():
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Microsoft authentication not configured"
         )
-    
-    # Generate state token
-    state = secrets.token_urlsafe(32)
-    oauth_states[state] = datetime.now(timezone.utc)
-    
-    # Clean old states (older than 10 minutes)
-    current_time = datetime.now(timezone.utc)
-    expired_states = [
-        s for s, t in oauth_states.items()
-        if (current_time - t).total_seconds() > 600
-    ]
-    for s in expired_states:
-        del oauth_states[s]
-    
+
+    state = _create_oauth_state()
     auth_url = microsoft_auth_service.get_auth_url(state=state)
     return RedirectResponse(url=auth_url)
 
@@ -68,12 +77,11 @@ async def auth_callback(
             url=f"{settings.frontend_url}/login?error=missing_params"
         )
     
-    # Verify state
-    if state not in oauth_states:
+    # Verify state (signed JWT — stateless, works with multiple workers)
+    if not _verify_oauth_state(state):
         return RedirectResponse(
             url=f"{settings.frontend_url}/login?error=invalid_state"
         )
-    del oauth_states[state]
     
     # Exchange code for token
     token_result = await microsoft_auth_service.get_token_from_code(code)
@@ -139,58 +147,37 @@ async def login_local(
     """Handle local email/password login."""
     try:
         user_service = UserService(session)
-        print(f"Attempting login for: {form_data.username}")
         user = user_service.get_user_by_email(form_data.username)
-        
-        if not user:
-            print("User not found")
+
+        if not user or not user.hashed_password:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-            
-        if not user.hashed_password:
-            print("User has no password")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or password (no pass)",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-            
-        is_valid = verify_password(form_data.password, user.hashed_password)
-        if not is_valid:
-            print(f"Invalid password. Received: '{form_data.password}' (len={len(form_data.password)})")
-            print(f"Stored hash: '{user.hashed_password}'")
-            try:
-                from passlib.context import CryptContext
-                pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-                print(f"Verify check: {pwd_context.verify(form_data.password, user.hashed_password)}")
-            except Exception as e:
-                print(f"Debug verify failed: {e}")
-                
+
+        if not verify_password(form_data.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        
+
         if not user.is_active:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Inactive user"
             )
-            
+
         user_service.update_last_login(user.id)
         access_token = create_access_token(data={"sub": str(user.id)})
-        
+
         return {"access_token": access_token, "token_type": "bearer"}
     except HTTPException:
         raise
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
+    except Exception:
+        logger.exception("Unexpected error during login")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Login error: {str(e)}"
+            detail="An unexpected error occurred during login"
         )

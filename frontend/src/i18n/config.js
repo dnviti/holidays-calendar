@@ -6,7 +6,6 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enCommon from '../locales/en/common.json';
 import enAuth from '../locales/en/auth.json';
 import enDashboard from '../locales/en/dashboard.json';
-import enCalendar from '../locales/en/calendar.json';
 import enApprovals from '../locales/en/approvals.json';
 import enTeam from '../locales/en/team.json';
 import enAdmin from '../locales/en/admin.json';
@@ -16,7 +15,6 @@ import enErrors from '../locales/en/errors.json';
 import itCommon from '../locales/it/common.json';
 import itAuth from '../locales/it/auth.json';
 import itDashboard from '../locales/it/dashboard.json';
-import itCalendar from '../locales/it/calendar.json';
 import itApprovals from '../locales/it/approvals.json';
 import itTeam from '../locales/it/team.json';
 import itAdmin from '../locales/it/admin.json';
@@ -32,7 +30,6 @@ i18n
         common: enCommon,
         auth: enAuth,
         dashboard: enDashboard,
-        calendar: enCalendar,
         approvals: enApprovals,
         team: enTeam,
         admin: enAdmin,
@@ -43,7 +40,6 @@ i18n
         common: itCommon,
         auth: itAuth,
         dashboard: itDashboard,
-        calendar: itCalendar,
         approvals: itApprovals,
         team: itTeam,
         admin: itAdmin,

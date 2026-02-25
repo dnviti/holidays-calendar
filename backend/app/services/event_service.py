@@ -1,7 +1,7 @@
 """
 Event service for managing calendar events.
 """
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import List, Optional
 from uuid import UUID
 from sqlmodel import Session, select, and_, or_

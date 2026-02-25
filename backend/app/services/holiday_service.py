@@ -1,7 +1,7 @@
 """
 Holiday service with overlap detection.
 """
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import List, Optional
 from uuid import UUID
 from sqlmodel import Session, select, and_, or_
@@ -157,14 +157,13 @@ class HolidayService:
         holiday.status = HolidayStatus.APPROVED
         holiday.reviewed_by_id = manager.id
         holiday.manager_notes = notes
-        from datetime import datetime
         holiday.reviewed_at = datetime.now(timezone.utc)
         holiday.updated_at = datetime.now(timezone.utc)
-        
+
         self.session.commit()
         self.session.refresh(holiday)
         return holiday
-    
+
     def reject_holiday(
         self,
         holiday_id: UUID,
@@ -179,14 +178,13 @@ class HolidayService:
         holiday.status = HolidayStatus.REJECTED
         holiday.reviewed_by_id = manager.id
         holiday.manager_notes = notes
-        from datetime import datetime
         holiday.reviewed_at = datetime.now(timezone.utc)
         holiday.updated_at = datetime.now(timezone.utc)
-        
+
         self.session.commit()
         self.session.refresh(holiday)
         return holiday
-    
+
     def request_change(
         self,
         holiday_id: UUID,
@@ -201,14 +199,13 @@ class HolidayService:
         holiday.status = HolidayStatus.CHANGE_REQUESTED
         holiday.reviewed_by_id = manager.id
         holiday.manager_notes = notes
-        from datetime import datetime
         holiday.reviewed_at = datetime.now(timezone.utc)
         holiday.updated_at = datetime.now(timezone.utc)
-        
+
         self.session.commit()
         self.session.refresh(holiday)
         return holiday
-    
+
     def update_holiday(
         self,
         holiday_id: UUID,
@@ -247,13 +244,12 @@ class HolidayService:
             holiday.has_overlap = len(overlaps) > 0
             holiday.overlap_user_ids = [str(h.user_id) for h in overlaps]
 
-        from datetime import datetime
         holiday.updated_at = datetime.now(timezone.utc)
-        
+
         self.session.commit()
         self.session.refresh(holiday)
         return holiday
-    
+
     def delete_holiday(
         self,
         holiday_id: UUID,
@@ -271,7 +267,6 @@ class HolidayService:
         if holiday.status == HolidayStatus.APPROVED:
             # Mark as cancelled instead of deleting
             holiday.status = HolidayStatus.CANCELLED
-            from datetime import datetime
             holiday.updated_at = datetime.now(timezone.utc)
             self.session.commit()
         else:

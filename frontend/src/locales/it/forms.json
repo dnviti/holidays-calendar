@@ -79,7 +79,13 @@
     "teamAvailability": "Disponibilità del Team",
     "allClear": "Nessun membro del team è assente durante questo periodo",
     "statusApproved": "Approvata",
-    "statusPending": "In attesa"
+    "statusPending": "In attesa",
+    "legend0": "Nessuna assenza",
+    "legend1": "1 persona",
+    "legend2": "2 persone",
+    "legend3": "3+ persone",
+    "daysOverlap": "{{count}} giorni di sovrapposizione",
+    "noAbsences": "Nessuna assenza in questo giorno"
   },
   "status": {
     "pending": "In Attesa di Approvazione",

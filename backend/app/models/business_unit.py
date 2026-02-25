@@ -2,7 +2,7 @@
 Business Unit model with customization options.
 """
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, TYPE_CHECKING
 from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel, Relationship

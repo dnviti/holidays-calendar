@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import CalendarView from '../components/CalendarView';
 import { toast } from 'sonner';
 import {
+  getCalendarHolidays,
+  updateHoliday,
   deleteHoliday,
   approveHoliday,
   rejectHoliday,
@@ -16,56 +18,129 @@ import {
   Grid,
   Card as MuiCard,
   CardContent as MuiCardContent,
-  Button as MuiButton
+  Button as MuiButton,
+  Autocomplete,
+  Checkbox,
+  TextField,
+  Chip,
+  CircularProgress
 } from '@mui/material';
+import { CheckBoxOutlineBlank, CheckBox } from '@mui/icons-material';
 import LeaveRequestDialog from '../components/LeaveRequestDialog';
+
+const icon = <CheckBoxOutlineBlank fontSize="small" />;
+const checkedIcon = <CheckBox fontSize="small" />;
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { t } = useTranslation('dashboard');
-  const [holidays, setHolidays] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [businessUnits, setBusinessUnits] = useState([]);
+  const [selectedBUs, setSelectedBUs] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+
+  // Keep a ref to selectedBUs for use inside fetchCalendarData without re-creating the callback
+  const selectedBUsRef = useRef(selectedBUs);
+  selectedBUsRef.current = selectedBUs;
 
   useEffect(() => {
-    fetchHolidays();
     fetchBusinessUnits();
   }, [user]);
-
-  const fetchHolidays = async () => {
-    try {
-      const response = await api.get('/holidays');
-      setHolidays(response.data);
-    } catch (error) {
-      console.error('Failed to fetch holidays:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchBusinessUnits = async () => {
     try {
       const response = await api.get('/business-units');
       setBusinessUnits(response.data);
+      setSelectedBUs(response.data); // Select all by default
     } catch (error) {
       console.error('Failed to fetch business units:', error);
     }
   };
 
+  const fetchCalendarData = useCallback(async (bus = null) => {
+    const buList = bus || selectedBUsRef.current;
+    if (buList.length === 0) {
+      setCalendarEvents([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoadingEvents(true);
+    try {
+      const year = new Date().getFullYear();
+      const start = `${year}-01-01`;
+      const end = `${year}-12-31`;
+
+      const results = await Promise.all(
+        buList.map(bu =>
+          getCalendarHolidays(bu.id, start, end).then(holidays => ({ buId: bu.id, holidays }))
+        )
+      );
+
+      // Merge and deduplicate by holiday id
+      const seen = new Set();
+      const allEvents = [];
+      for (const { buId, holidays } of results) {
+        for (const h of holidays) {
+          if (!seen.has(h.id)) {
+            seen.add(h.id);
+            allEvents.push({
+              id: h.id,
+              title: h.title,
+              start: h.start,
+              end: h.end,
+              allDay: true,
+              backgroundColor: h.color,
+              borderColor: h.color,
+              textColor: '#ffffff',
+              extendedProps: {
+                user_id: h.user_id,
+                userName: h.user_name,
+                userAvatar: h.user_avatar,
+                holidayType: h.holiday_type,
+                status: h.status,
+                has_overlap: h.has_overlap,
+                business_unit_id: buId,
+                description: h.description || '',
+                category: 'holiday'
+              }
+            });
+          }
+        }
+      }
+
+      setCalendarEvents(allEvents);
+    } catch (error) {
+      console.error(error);
+      toast.error(t('messages.loadCalendarFailed'));
+    } finally {
+      setLoading(false);
+      setLoadingEvents(false);
+    }
+  }, [t]);
+
+  // Fetch calendar data when selected BUs change
+  useEffect(() => {
+    if (businessUnits.length > 0) {
+      fetchCalendarData(selectedBUs);
+    }
+  }, [selectedBUs, businessUnits.length, fetchCalendarData]);
+
   const handleCreateHoliday = () => {
-    fetchHolidays();
+    fetchCalendarData();
   };
 
   const handleUpdateHoliday = () => {
-    fetchHolidays();
+    fetchCalendarData();
   };
 
   const handleDeleteHoliday = async (holidayId) => {
     try {
       await deleteHoliday(holidayId);
       toast.success(t('messages.holidayDeleted'));
-      fetchHolidays();
+      fetchCalendarData();
     } catch (error) {
       console.error(error);
       toast.error(t('messages.holidayDeleteFailed'));
@@ -76,7 +151,7 @@ const Dashboard = () => {
     try {
       await approveHoliday(holidayId, notes);
       toast.success(t('messages.leaveApproved'));
-      fetchHolidays();
+      fetchCalendarData();
     } catch (error) {
       console.error(error);
       toast.error(t('messages.approveLeaveRequestFailed'));
@@ -87,7 +162,7 @@ const Dashboard = () => {
     try {
       await rejectHoliday(holidayId, notes);
       toast.success(t('messages.leaveRejected'));
-      fetchHolidays();
+      fetchCalendarData();
     } catch (error) {
       console.error(error);
       toast.error(t('messages.rejectLeaveRequestFailed'));
@@ -98,61 +173,58 @@ const Dashboard = () => {
     try {
       await requestChangeHoliday(holidayId, notes);
       toast.success(t('messages.leaveChangeRequested'));
-      fetchHolidays();
+      fetchCalendarData();
     } catch (error) {
       console.error(error);
       toast.error(t('messages.requestChangeFailed'));
     }
   };
 
-  const handleEventDrop = async (info) => {
-    const { event } = info;
+  const handleEventDrop = async (dropInfo) => {
     try {
-      const start = event.start.toISOString().split('T')[0];
+      const startDate = dropInfo.event.startStr.split('T')[0];
+      let endDate = startDate;
 
-      // FullCalendar end date is exclusive, but backend is inclusive.
-      // If event.end is null (it happens for 1 day events sometimes in FC), use start.
-      // Otherwise subtract 1 day.
-      let end = start;
-      if (event.end) {
-        const endDate = new Date(event.end);
-        endDate.setDate(endDate.getDate() - 1);
-        end = endDate.toISOString().split('T')[0];
+      if (dropInfo.event.endStr) {
+        if (dropInfo.event.allDay) {
+          const [y, m, dy] = dropInfo.event.endStr.split('T')[0].split('-').map(Number);
+          const endObj = new Date(y, m - 1, dy - 1);
+          const calculated = `${endObj.getFullYear()}-${String(endObj.getMonth() + 1).padStart(2, '0')}-${String(endObj.getDate()).padStart(2, '0')}`;
+          if (calculated >= startDate) endDate = calculated;
+        } else {
+          endDate = dropInfo.event.endStr.split('T')[0];
+        }
       }
 
-      await api.put(`/holidays/${event.extendedProps.id}`, {
-        start_date: start,
-        end_date: end
+      await updateHoliday(dropInfo.event.id, {
+        start_date: startDate,
+        end_date: endDate,
       });
 
       toast.success(t('messages.holidayUpdated'));
-      fetchHolidays();
+      fetchCalendarData();
     } catch (error) {
       console.error(error);
       toast.error(t('messages.holidayUpdateFailed'));
-      info.revert();
+      dropInfo.revert();
     }
   };
 
-  const events = holidays.map(h => {
-    // Add 1 day to end date for FullCalendar (exclusive end)
-    const endDate = new Date(h.end_date);
-    endDate.setDate(endDate.getDate() + 1);
-
-    return {
-      id: h.id, // Important for drag and drop to identify event
-      title: h.title,
-      start: h.start_date,
-      end: endDate.toISOString().split('T')[0],
-      color: h.status === 'approved' ? 'var(--success-color)' : 'var(--warning-color)',
-      extendedProps: { ...h },
-      editable: h.status === 'pending' // Only allow editing pending requests
-    };
-  });
+  const pendingCount = calendarEvents.filter(e => e.extendedProps.status === 'pending').length;
+  const approvedCount = calendarEvents.filter(e => e.extendedProps.status === 'approved').length;
+  const totalCount = calendarEvents.length;
 
   return (
     <Box sx={{ flex: 1, gap: 3, p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      {/* Header */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        justifyContent: 'space-between',
+        alignItems: { xs: 'stretch', md: 'center' },
+        gap: 2,
+        mb: 3
+      }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
             {t('welcome', { name: user?.display_name })}
@@ -161,17 +233,66 @@ const Dashboard = () => {
             {t('subtitle')}
           </Typography>
         </Box>
-        <MuiButton
-          variant="contained"
-          onClick={() => setIsRequestModalOpen(true)}
-          sx={{ borderRadius: 2, py: 1, px: 3 }}
-        >
-          {t('requestLeave.button')}
-        </MuiButton>
+
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Multi-BU Selector */}
+          <Autocomplete
+            multiple
+            disableCloseOnSelect
+            options={businessUnits}
+            value={selectedBUs}
+            onChange={(_, newValue) => setSelectedBUs(newValue)}
+            getOptionLabel={(option) => option.name}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderOption={(props, option, { selected }) => {
+              const { key, ...rest } = props;
+              return (
+                <li key={key} {...rest}>
+                  <Checkbox
+                    icon={icon}
+                    checkedIcon={checkedIcon}
+                    checked={selected}
+                    sx={{ mr: 1 }}
+                  />
+                  {option.name}
+                </li>
+              );
+            }}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => {
+                const { key, ...rest } = getTagProps({ index });
+                return (
+                  <Chip
+                    key={key}
+                    label={option.name}
+                    size="small"
+                    {...rest}
+                  />
+                );
+              })
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={t('businessUnit.selectPlaceholder')}
+                size="small"
+              />
+            )}
+            sx={{ minWidth: { xs: '100%', md: 300 } }}
+          />
+
+          <MuiButton
+            variant="contained"
+            onClick={() => setIsRequestModalOpen(true)}
+            sx={{ borderRadius: 2, py: 1, px: 3, whiteSpace: 'nowrap' }}
+          >
+            {t('requestLeave.button')}
+          </MuiButton>
+        </Box>
       </Box>
 
+      {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        {/* Stats Cards */}
         <Grid item xs={12} sm={6} md={4}>
           <MuiCard sx={{ borderRadius: 2, boxShadow: 2 }}>
             <MuiCardContent>
@@ -179,7 +300,7 @@ const Dashboard = () => {
                 {t('stats.pendingRequests')}
               </Typography>
               <Typography variant="h4" component="div" fontWeight="bold">
-                {holidays.filter(h => h.status === 'pending').length}
+                {pendingCount}
               </Typography>
             </MuiCardContent>
           </MuiCard>
@@ -191,13 +312,8 @@ const Dashboard = () => {
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 {t('stats.approvedThisYear')}
               </Typography>
-              <Typography
-                variant="h4"
-                component="div"
-                fontWeight="bold"
-                color="success.main"
-              >
-                {holidays.filter(h => h.status === 'approved').length}
+              <Typography variant="h4" component="div" fontWeight="bold" color="success.main">
+                {approvedCount}
               </Typography>
             </MuiCardContent>
           </MuiCard>
@@ -210,26 +326,34 @@ const Dashboard = () => {
                 {t('stats.totalHolidays')}
               </Typography>
               <Typography variant="h4" component="div" fontWeight="bold">
-                {holidays.length}
+                {totalCount}
               </Typography>
             </MuiCardContent>
           </MuiCard>
         </Grid>
       </Grid>
 
-      <Box sx={{ flex: 1, minHeight: '600px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <CalendarView
-          events={events}
-          onEventDrop={handleEventDrop}
-          onCreateEvent={handleCreateHoliday}
-          onUpdateEvent={handleUpdateHoliday}
-          onDeleteEvent={handleDeleteHoliday}
-          onApproveEvent={handleApproveHoliday}
-          onRejectEvent={handleRejectHoliday}
-          onRequestChange={handleRequestChange}
-          businessUnits={businessUnits}
-          showEventCreation={true}
-        />
+      {/* Calendar */}
+      <Box sx={{ flex: 1, minHeight: '600px', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        {loading ? (
+          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', borderRadius: 2 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <CalendarView
+            events={calendarEvents}
+            onEventDrop={handleEventDrop}
+            onCreateEvent={handleCreateHoliday}
+            onUpdateEvent={handleUpdateHoliday}
+            onDeleteEvent={handleDeleteHoliday}
+            onApproveEvent={handleApproveHoliday}
+            onRejectEvent={handleRejectHoliday}
+            onRequestChange={handleRequestChange}
+            selectedBusinessUnit={selectedBUs.length === 1 ? selectedBUs[0].id : null}
+            businessUnits={businessUnits}
+            showEventCreation={true}
+          />
+        )}
       </Box>
 
       <LeaveRequestDialog
@@ -238,7 +362,7 @@ const Dashboard = () => {
         onSuccess={() => {
           toast.success(t('requestLeave.success'));
           setIsRequestModalOpen(false);
-          fetchHolidays();
+          fetchCalendarData();
         }}
         businessUnits={businessUnits}
       />

@@ -2,7 +2,7 @@
 Application branding model for admin customization.
 """
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel

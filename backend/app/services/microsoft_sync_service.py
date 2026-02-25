@@ -1,4 +1,5 @@
 """Microsoft 365 sync service for users and groups."""
+import logging
 from typing import Dict, List, Optional, Set
 from uuid import UUID
 
@@ -439,7 +440,9 @@ class MicrosoftSyncService:
 
         except Exception as e:
             # Log error but don't fail the entire group sync
-            print(f"Error syncing members for group {microsoft_group_id}: {e}")
+            logging.getLogger(__name__).exception(
+                "Error syncing members for group %s", microsoft_group_id
+            )
             return 0
 
     async def _deactivate_removed_users(

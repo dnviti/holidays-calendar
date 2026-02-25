@@ -1,6 +1,7 @@
 """
 Holiday Calendar API - Main Application Entry Point
 """
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,27 +12,31 @@ from app.core.config import settings
 from app.core.database import create_db_and_tables
 from app.api import auth, users, business_units, holidays, events, branding, sync, notifications
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
-    print(f"Starting {settings.app_name} v{settings.app_version}")
-    print(f"Environment: {settings.environment}")
-    print(f"Database: {settings.database_url.split('@')[-1] if '@' in settings.database_url else settings.database_url}")
-    
+    if settings.is_production and settings.secret_key == "your-secret-key-change-in-production":
+        raise RuntimeError("SECRET_KEY must be changed in production!")
+
+    logger.info("Starting %s v%s", settings.app_name, settings.app_version)
+    logger.info("Environment: %s", settings.environment)
+
     # Create tables (only for SQLite in dev, use Alembic migrations in production)
     if settings.is_sqlite and not settings.is_production:
         create_db_and_tables()
-        print("Database tables created (SQLite dev mode)")
-    
+        logger.info("Database tables created (SQLite dev mode)")
+
     # Create default admin if not exists
     await create_default_admin()
-    
+
     yield
-    
+
     # Shutdown
-    print("Shutting down...")
+    logger.info("Shutting down...")
 
 
 async def create_default_admin():
@@ -61,7 +66,7 @@ async def create_default_admin():
         )
         session.add(admin)
         session.commit()
-        print(f"Default admin created: {admin_email}")
+        logger.info("Default admin created: %s", admin_email)
 
 
 # Create FastAPI app

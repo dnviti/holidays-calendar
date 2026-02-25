@@ -2,7 +2,7 @@
 User model with roles and Microsoft 365 integration.
 """
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
 from uuid import UUID, uuid4

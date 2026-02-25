@@ -2,7 +2,7 @@
 Event model for calendar events.
 """
 from __future__ import annotations
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
